@@ -92,8 +92,7 @@ for result in search_results:
 
 # Close the WebDriver
 driver.quit()
-# print(games)
-# print(data)
+
 with open('data/data.json', 'w', encoding='utf-8') as f:
   json.dump(games, f, ensure_ascii=False, indent=4)
 

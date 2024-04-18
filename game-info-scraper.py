@@ -53,14 +53,17 @@ def accessMatureContent():
   driver.find_element(By.ID, "ageYear").send_keys("2000")
   driver.find_element(By.ID, "view_product_page_btn").click()
 
+######
+# main
+######
 
 gameIds= getAllGameIds()
 driver = init()
 
+gamesInfo = dict()
 for g in gameIds.values():
   # Set each url and get html content for that game
   url = "https://store.steampowered.com/app/" + str(g)
-  # url = "https://store.steampowered.com/app/2273420"
   print(url)
   driver.get(url)
 
@@ -70,16 +73,22 @@ for g in gameIds.values():
     accessMatureContent()
   
   if (mature != None):
-    # TODO scrape description and anything
     try:
       element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "game_area_description")))
     finally:
       page_source = driver.page_source
       soup = BeautifulSoup(page_source, "html.parser")
       search_results = soup.find("div", {"id": "game_area_description"})
-      print(search_results.prettify(encoding="utf8"))
+      gamesInfo[g] = ({"Description": str(search_results), "IsMature": mature})
+  else:
+    gamesInfo[g] = ({"Description": None, "IsMature": None})
   
   # Needed in order to check if subsequent games are mature
   driver.delete_all_cookies()
 
-driver.close()
+driver.quit()
+
+with open('data/descriptions.json', 'w', encoding='utf-8') as f:
+  json.dump(gamesInfo, f, ensure_ascii=False, indent=4)
+
+print(len(gamesInfo))
