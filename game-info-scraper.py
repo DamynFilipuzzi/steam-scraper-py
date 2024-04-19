@@ -16,8 +16,8 @@ def getAllGameIds():
   data = json.load(file)
   i = 0
   steamIds = dict()
-  for e in data.values():
-    steamIds[i] = e['SteamId']
+  for e in data:
+    steamIds[i] = e
     i += 1
   return steamIds
 
@@ -54,9 +54,26 @@ def accessMatureContent():
   driver.find_element(By.ID, "ageYear").send_keys("2000")
   driver.find_element(By.ID, "view_product_page_btn").click()
 
-##################
-###### main ######
-##################
+def getReviews(soup, driver):
+  # init array of size 2
+  reviews = [0] * 2
+  try:
+    element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "review_summary_num_reviews")))
+    element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "review_summary_num_positive_reviews")))
+    reviews[0] = soup.find("input", {"id": "review_summary_num_reviews"}).get("value")
+    reviews[1] = soup.find("input", {"id": "review_summary_num_positive_reviews"}).get("value")
+  except TimeoutException:
+    print("failed to find reviews")
+    return reviews
+  return reviews
+
+
+
+##########################################
+################## main ##################
+##########################################
+
+
 
 gameIds= getAllGameIds()
 driver = init()
@@ -72,23 +89,6 @@ for g in tqdm(gameIds.values(), desc="Scraping game info..."):
   mature = checkMatureContent()
   if (mature):
     accessMatureContent()
-
-  # rating = result.find(class_ = "search_review_summary")
-  # ratingStringBreakdown = str(rating)
-  # ratingStringBreakdown = re.findall(r'\d+',ratingStringBreakdown)
-  
-  # if (len(ratingStringBreakdown) != 0):
-  #   ratingStr = ratingStringBreakdown[0]
-  #   # remove first element in list (removes rating percentage)
-  #   ratingStringBreakdown.remove(ratingStringBreakdown[0])
-  #   index = 0
-  #   numOfReviews = ''
-  #   for e in ratingStringBreakdown:
-  #     numOfReviews += ratingStringBreakdown[index]
-  #     index += 1
-  # else:
-  #   ratingStr = None
-  #   numOfReviews = None
   
   if (mature != None):
     try:
@@ -96,13 +96,14 @@ for g in tqdm(gameIds.values(), desc="Scraping game info..."):
       page_source = driver.page_source
       soup = BeautifulSoup(page_source, "html.parser")
       search_results = soup.find("div", {"id": "game_area_description"})
-      gamesInfo[g] = ({"Description": str(search_results), "IsMature": mature})
+      reviews = getReviews(soup, driver)
+      gamesInfo[g] = ({"Description": str(search_results), "IsMature": mature, "TotalReviews": int(reviews[0]), "TotalPositiveReviews": int(reviews[1])})
     except TimeoutException:
-      print("failed to find")
-      gamesInfo[g] = ({"Description": None, "IsMature": None})
+      print("failed to find descriptions")
+      gamesInfo[g] = ({"Description": None, "IsMature": None, "TotalReviews": 0, "TotalPositiveReviews": 0})
       pass
   else:
-    gamesInfo[g] = ({"Description": None, "IsMature": None})
+    gamesInfo[g] = ({"Description": None, "IsMature": None, "TotalReviews": 0, "TotalPositiveReviews": 0})
   
   # Needed in order to check if subsequent games are mature
   driver.delete_all_cookies()
