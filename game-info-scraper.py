@@ -1,4 +1,3 @@
-import time
 import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -7,7 +6,9 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.wait import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
+from tqdm import tqdm
 
 # Get all game IDs store in data.json
 def getAllGameIds():
@@ -53,15 +54,15 @@ def accessMatureContent():
   driver.find_element(By.ID, "ageYear").send_keys("2000")
   driver.find_element(By.ID, "view_product_page_btn").click()
 
-######
-# main
-######
+##################
+###### main ######
+##################
 
 gameIds= getAllGameIds()
 driver = init()
 
 gamesInfo = dict()
-for g in gameIds.values():
+for g in tqdm(gameIds.values(), desc="Scraping game info..."):
   # Set each url and get html content for that game
   url = "https://store.steampowered.com/app/" + str(g)
   print(url)
@@ -71,15 +72,35 @@ for g in gameIds.values():
   mature = checkMatureContent()
   if (mature):
     accessMatureContent()
+
+  # rating = result.find(class_ = "search_review_summary")
+  # ratingStringBreakdown = str(rating)
+  # ratingStringBreakdown = re.findall(r'\d+',ratingStringBreakdown)
+  
+  # if (len(ratingStringBreakdown) != 0):
+  #   ratingStr = ratingStringBreakdown[0]
+  #   # remove first element in list (removes rating percentage)
+  #   ratingStringBreakdown.remove(ratingStringBreakdown[0])
+  #   index = 0
+  #   numOfReviews = ''
+  #   for e in ratingStringBreakdown:
+  #     numOfReviews += ratingStringBreakdown[index]
+  #     index += 1
+  # else:
+  #   ratingStr = None
+  #   numOfReviews = None
   
   if (mature != None):
     try:
       element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "game_area_description")))
-    finally:
       page_source = driver.page_source
       soup = BeautifulSoup(page_source, "html.parser")
       search_results = soup.find("div", {"id": "game_area_description"})
       gamesInfo[g] = ({"Description": str(search_results), "IsMature": mature})
+    except TimeoutException:
+      print("failed to find")
+      gamesInfo[g] = ({"Description": None, "IsMature": None})
+      pass
   else:
     gamesInfo[g] = ({"Description": None, "IsMature": None})
   

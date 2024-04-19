@@ -3,8 +3,7 @@ import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
 import json
-from types import SimpleNamespace
-from datetime import datetime
+from tqdm import tqdm
 
 # Load .env file
 load_dotenv()
@@ -21,22 +20,20 @@ file = open('data/data.json', encoding="utf-8")
 data = json.load(file)
 
 # Insert entry into games table if it does not exist. 
-for e in data.values():
-  steamID = int(e['SteamId'])
-  title = str(e['Title'])
-  ratingPercentage = None if e['RatingPercent'] == None else int(e['RatingPercent'])
-  numOfReviews = None if e['NumOfReviews'] == None else int(e['NumOfReviews'])
-  if (e['OriginalPrice'] != None):
-    if (e['OriginalPrice'] != "Free"):
-      originalPrice = e['OriginalPrice'].replace(',', '')
+for e in tqdm(data, desc="Inserting Records..."):
+  steamID = e
+  title = str(data[e]['Title'])
+  if (data[e]['OriginalPrice'] != None):
+    if (data[e]['OriginalPrice'] != "Free"):
+      originalPrice = data[e]['OriginalPrice'].replace(',', '')
       originalPrice = originalPrice.replace('.', '')
     else:
       originalPrice = None
   else:
     originalPrice = None
-  if (e['DiscountPrice'] != None):
-    if (e['DiscountPrice'] != "Free"):
-      discountPrice = e['DiscountPrice'].replace(',', '')
+  if (data[e]['DiscountPrice'] != None):
+    if (data[e]['DiscountPrice'] != "Free"):
+      discountPrice = data[e]['DiscountPrice'].replace(',', '')
       discountPrice = discountPrice.replace('.', '')
     else:
       discountPrice = None
@@ -50,9 +47,9 @@ for e in data.values():
   if (result is False):
     print('Inserting game. Steam ID: %s', steamID)
     cur.execute("""
-      INSERT INTO "Games" (steam_id, title, rating_percentage, number_of_reviews, original_price, discount_price)
+      INSERT INTO "Games" (steam_id, title, original_price, discount_price)
       VALUES (%s, %s, %s, %s, %s, %s)
-      """, (steamID, title, ratingPercentage, numOfReviews, originalPrice, discountPrice))
+      """, (steamID, title, originalPrice, discountPrice))
   else:
     print("Record Exists")
 
