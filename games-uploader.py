@@ -48,7 +48,7 @@ for e in tqdm(data, desc="Inserting Records..."):
     print('Inserting game. Steam ID: %s', steamID)
     cur.execute("""
       INSERT INTO "Games" (steam_id, title, original_price, discount_price)
-      VALUES (%s, %s, %s, %s, %s, %s)
+      VALUES (%s, %s, %s, %s)
       """, (steamID, title, originalPrice, discountPrice))
   else:
     print("Record Exists")
