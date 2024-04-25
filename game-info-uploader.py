@@ -19,15 +19,16 @@ cur = conn.cursor()
 file = open('data/descriptions.json', encoding="utf-8")
 data = json.load(file)
 
-# Insert entry into games table if it does not exist. 
+# Insert entry into games table if it does not exist.
 for e in tqdm(data, desc="Inserting Records..."):
   steamID = e
 
   if (data[e]['Description'] != None):
-    desc = str(data[e]['Description'])
+    # remove forward slash from desc
+    desc = str(data[e]['Description']).strip()
   else:
     desc = None
-  
+
   if (data[e]['IsMature'] != None):
     isMature = bool(data[e]['IsMature'])
   else:
@@ -43,20 +44,23 @@ for e in tqdm(data, desc="Inserting Records..."):
   else:
     totalPositiveReviews = None
   
-
-  
-  # Check if game exists in db
+  # Check if game exists in db and if game_info exists
+  cur.execute('''SELECT EXISTS ( SELECT 1 FROM "Games" WHERE steam_id = %s)''', (steamID,))
+  gameExists = cur.fetchone()[0]
   cur.execute('''SELECT EXISTS ( SELECT 1 FROM "Game_Info" WHERE steam_id = %s)''', (steamID,))
-  result = cur.fetchone()[0]
+  gameInfoExists = cur.fetchone()[0]
   # if game_info does not exist then insert
-  if (result is False):
-    print('Inserting game. Steam ID: %s', steamID)
-    cur.execute("""
-      INSERT INTO "Game_Info" (steam_id, desc, is_mature, total_reviews, total_positive_reviews)
-      VALUES (%s, %s, %s, %s, %s)
-      """, (steamID, desc, isMature, totalReviews, totalPositiveReviews))
+  if (gameExists is not False):
+    if (gameInfoExists is False):
+      print('Inserting game. Steam ID: %s', steamID)
+      cur.execute("""
+        INSERT INTO "Game_Info" (steam_id, description, is_mature, total_reviews, total_positive_reviews)
+        VALUES (%s, %s, %s, %s, %s)
+        """, (steamID, desc, isMature, totalReviews, totalPositiveReviews))
+    else:
+      print("Record Exists")
   else:
-    print("Record Exists")
+    print("Game Does not exist in DB")
 
 print("\nclosing\n")
 conn.commit()
