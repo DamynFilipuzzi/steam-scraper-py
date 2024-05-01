@@ -19,10 +19,10 @@ cur = conn.cursor()
 file = open('data/data.json', encoding="utf-8")
 data = json.load(file)
 
-# Insert entry into games table if it does not exist. 
-for e in tqdm(data, desc="Inserting Records..."):
+gamePrices = dict()
+# Insert entry into games table if it does not exist.
+for e in tqdm(data, desc="Extracting prices from games..."):
   steamID = e
-  title = str(data[e]['Title'])
   if (data[e]['OriginalPrice'] != None):
     if (data[e]['OriginalPrice'] != "Free"):
       originalPrice = data[e]['OriginalPrice'].replace(',', '')
@@ -42,17 +42,17 @@ for e in tqdm(data, desc="Inserting Records..."):
   
   # Check if game exists in db
   cur.execute('''SELECT EXISTS ( SELECT 1 FROM "Games" WHERE steam_id = %s)''', (steamID,))
-  result = cur.fetchone()[0]
-  # if game does not exist then insert, otherwise update price if it differs from prev
-  if (result is False):
-    print('Inserting game. Steam ID: %s', steamID)
-    cur.execute("""
-      INSERT INTO "Games" (steam_id, title, original_price, discount_price)
-      VALUES (%s, %s, %s, %s)
-      """, (steamID, title, originalPrice, discountPrice))
+  gameExists = cur.fetchone()[0]
+  # Check if Price exists in db
+  cur.execute('''SELECT EXISTS ( SELECT 1 FROM "Price" WHERE steam_id = %s)''', (steamID,))
+  priceExists = cur.fetchone()[0]
+  if (gameExists is not False):
+    if (priceExists is False):
+      cur.execute('''INSERT INTO "Price" (steam_id, original_price, discount_price, valid_to) VALUES (%s, %s, %s, %s)''', (steamID, originalPrice, discountPrice, '9999-12-31'))
+    else:
+      print("Game Price exist. Doing nothing")
   else:
-    # TODO update price if it differs from prev
-    print("Record Exists")
+    print("Game Does not exist in DB")
 
 print("\nclosing\n")
 conn.commit()

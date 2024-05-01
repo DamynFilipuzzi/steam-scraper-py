@@ -1,7 +1,3 @@
-import os
-import psycopg2
-import psycopg2.extras
-from dotenv import load_dotenv
 import json
 from tqdm import tqdm
 import roman
