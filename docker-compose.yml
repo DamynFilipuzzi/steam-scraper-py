@@ -3,7 +3,7 @@ services:
     build: ./
     command: python3 ./test.py
     volumes:
-      - shared-volume:/usr/src/app
+      - ./appdata:/appdata
   test2:
     depends_on:
       test1:
@@ -11,7 +11,4 @@ services:
     build: ./
     command: python3 ./test2.py
     volumes:
-      - shared-volume:/usr/src/app
-
-volumes:
-  shared-volume:
+      - ./appdata:/appdata
