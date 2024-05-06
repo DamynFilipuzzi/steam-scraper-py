@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 # Get all game IDs store in data.json
 def getAllGameIds():
-  file = open('data/data.json', encoding="utf-8")
+  file = open('/appdata/data.json', encoding="utf-8")
   data = json.load(file)
   i = 0
   steamIds = dict()
@@ -23,11 +23,20 @@ def getAllGameIds():
 
 def init():
   # Run google chrome in headless mode (no browser popup)
-  # TODO: Add Headless browsing later once confident in system
-  # options = Options()
+  options = Options()
   # options.add_argument('--headless')
+  # options.add_argument('--no-sandbox')
+  # options.add_argument('--disable-dev-shm-usage')
+  # AGRESSIVE: options.setPageLoadStrategy(PageLoadStrategy.NONE); // https://www.skptricks.com/2018/08/timed-out-receiving-message-from-renderer-selenium.html
+  options.add_argument("start-maximized")
+  options.add_argument("enable-automation")
+  options.add_argument("--headless")
+  options.add_argument("--no-sandbox")
+  options.add_argument("--disable-dev-shm-usage")
+  options.add_argument("--disable-browser-side-navigation")
+  options.add_argument("--disable-gpu")
 
-  driver = webdriver.Chrome()
+  driver = webdriver.Chrome(options=options)
   return driver
 
 # check if on mature content warning page
@@ -110,7 +119,7 @@ for g in tqdm(gameIds.values(), desc="Scraping game info..."):
 
 driver.quit()
 
-with open('data/descriptions.json', 'w', encoding='utf-8') as f:
+with open('/appdata/descriptions.json', 'w', encoding='utf-8') as f:
   json.dump(gamesInfo, f, ensure_ascii=False, indent=4)
 
 print(len(gamesInfo))

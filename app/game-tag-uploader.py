@@ -16,7 +16,7 @@ conn = psycopg2.connect(connection_string)
 cur = conn.cursor()
 
 # Read data to insert from file
-file = open('data/tags.json', encoding="utf-8")
+file = open('/appdata/tags.json', encoding="utf-8")
 data = json.load(file)
 
 # Insert entry into games table if it does not exist.

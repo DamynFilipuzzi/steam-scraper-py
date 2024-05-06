@@ -4,7 +4,7 @@ import roman
 import unidecode
 
 # Read data to insert from file
-file = open('data/data.json', encoding="utf-8")
+file = open('/appdata/data.json', encoding="utf-8")
 data = json.load(file)
 
 gameTag = dict()
@@ -41,7 +41,7 @@ for e in tqdm(data, desc="Tokenizing titles"):
     i += 1
   gameTag[steamID] = titleSplit
 
-with open('data/tags.json', 'w', encoding='utf-8') as f:
+with open('/appdata/tags.json', 'w', encoding='utf-8') as f:
   json.dump(gameTag, f, ensure_ascii=False, indent=4)
 
 print(len(gameTag))

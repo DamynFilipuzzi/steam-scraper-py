@@ -1,14 +1,57 @@
 services:
-  test1:
+  games-scraper:
     build: ./
-    command: python3 ./test.py
+    command: python3 ./dynamic-scraper-POC.py
     volumes:
       - ./appdata:/appdata
-  test2:
+
+  game-info-scraper:
+    build: ./
+    command: python3 ./game-info-scraper.py
+    volumes:
+      - ./appdata:/appdata
     depends_on:
-      test1:
+      games-scraper:
         condition: service_completed_successfully
+
+  game-tag-creator:
     build: ./
-    command: python3 ./test2.py
+    command: python3 ./game-tag-creator.py
     volumes:
       - ./appdata:/appdata
+    depends_on:
+      games-scraper:
+        condition: service_completed_successfully
+
+  games-uploader:
+    build: ./
+    command: python3 ./games-uploader.py
+    volumes:
+      - ./appdata:/appdata
+    depends_on:
+      games-scraper:
+        condition: service_completed_successfully
+
+  games-info-uploader:
+    build: ./
+    command: python3 ./games-uplooader.py
+    volumes:
+      - ./appdata:/appdata
+    depends_on:
+      game-info-scraper:
+        condition: service_completed_successfully
+
+  game-tag-uploader:
+    build: ./
+    command: python3 ./game-tag-uploader.py
+    volumes:
+      - ./appdata:/appdata
+    depends_on:
+      game-tag-creator:
+        condition: service_completed_successfully
+
+  # my-test:
+  #   image: ubuntu
+  #   command: bash -c "while true; do echo hello; sleep 2; done"
+  #   volumes:
+  #     - ./appdata:/appdata

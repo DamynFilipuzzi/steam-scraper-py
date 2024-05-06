@@ -8,7 +8,17 @@ from tqdm import tqdm
 
 # Run google chrome in headless mode (no browser popup)
 options = Options()
-options.add_argument('--headless')
+# options.add_argument('--headless')
+# options.add_argument('--no-sandbox')
+# options.add_argument('--disable-dev-shm-usage')
+# AGRESSIVE: options.setPageLoadStrategy(PageLoadStrategy.NONE); // https://www.skptricks.com/2018/08/timed-out-receiving-message-from-renderer-selenium.html
+options.add_argument("start-maximized")
+options.add_argument("enable-automation")
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-browser-side-navigation")
+options.add_argument("--disable-gpu")
 
 # Set up the Chrome WebDriver
 driver = webdriver.Chrome(options=options)
@@ -21,6 +31,7 @@ scroll_count = 5000
 
 # Simulate continuous scrolling using JavaScript
 for _ in tqdm(range(scroll_count), desc="Scrolling..."):
+  print('loading page: %s', _)
   driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
   time.sleep(2)  # Wait for the new results to load
 
@@ -77,7 +88,7 @@ for result in tqdm(search_results, desc="Loading to memory..."):
 # Close the WebDriver
 driver.quit()
 
-with open('data/data.json', 'w', encoding='utf-8') as f:
+with open('/appdata/data.json', 'w', encoding='utf-8') as f:
   json.dump(games, f, ensure_ascii=False, indent=4)
 
 print(len(games))
