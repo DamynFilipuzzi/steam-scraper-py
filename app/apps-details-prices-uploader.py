@@ -7,39 +7,54 @@ import json
 from tqdm import tqdm
 from datetime import datetime
 import logging
+import time
+
+def timing(f):
+    def wrap(*args, **kwargs):
+        time1 = time.time()
+        ret = f(*args, **kwargs)
+        time2 = time.time()
+        print('{:s} function took {:.3f} ms \n'.format(f.__name__, (time2-time1)*1000.0))
+
+        return ret
+    return wrap
 
 def getApps(apps, appDetails, isNew):
   appTuples = []
   for steamId in appDetails:
-    title = str(apps[steamId]['title'])
-    type = str(appDetails[steamId]['Type'])
-    originalPrice = int(appDetails[steamId]['OriginalPrice']) if appDetails[steamId]['OriginalPrice'] else None
-    discountPrice = int(appDetails[steamId]['DiscountPrice']) if appDetails[steamId]['DiscountPrice'] else None
-    lastModified = int(apps[steamId]['last_modified'])
-    priceChangeNumber = int(apps[steamId]['price_change_number'])
-    updatedAt = datetime.now()
-    if (isNew):
-      appTuples.append((steamId, title, type, originalPrice, discountPrice, lastModified, priceChangeNumber, updatedAt))
-    else:
+    # Only Store apps that have details
+    if (appDetails[steamId]['HasDetails']):
+      title = str(apps[steamId]['title'])
+      type = str(appDetails[steamId]['Type'])
+      originalPrice = int(appDetails[steamId]['OriginalPrice']) if appDetails[steamId]['OriginalPrice'] else None
+      discountPrice = int(appDetails[steamId]['DiscountPrice']) if appDetails[steamId]['DiscountPrice'] else None
+      lastModified = int(apps[steamId]['last_modified'])
+      priceChangeNumber = int(apps[steamId]['price_change_number'])
+      updatedAt = datetime.now()
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
-      appTuples.append((title, type, originalPrice, discountPrice, lastModified, priceChangeNumber, updatedAt, steamId))
+      if (isNew):
+        appTuples.append((steamId, title, type, originalPrice, discountPrice, lastModified, priceChangeNumber, updatedAt))
+      else:
+        appTuples.append((title, type, originalPrice, discountPrice, lastModified, priceChangeNumber, updatedAt, steamId))
 
   return appTuples
 
 def getDetails(appDetails, isNew):
   appDetailTuples = []
   for steamId in appDetails:
-    description = str(appDetails[steamId]['Description']) if appDetails[steamId]['Description'] else None
-    shortDescription = str(appDetails[steamId]['ShortDesc']) if appDetails[steamId]['ShortDesc'] else None
-    isMature = bool(appDetails[steamId]['IsMature']) if appDetails[steamId]['IsMature'] == False or appDetails[steamId]['IsMature'] == True else None
-    totalReviews = int(appDetails[steamId]['TotalReviews']) if appDetails[steamId]['TotalReviews'] else None
-    positiveReviews = int(appDetails[steamId]['PositiveReviews']) if appDetails[steamId]['PositiveReviews'] else None
-    updatedAt = datetime.now()
-    if (isNew):
-      appDetailTuples.append((steamId, description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt))
-    else:
+    # Only Store apps that have details
+    if (appDetails[steamId]['HasDetails']):
+      description = str(appDetails[steamId]['Description']) if appDetails[steamId]['Description'] else None
+      shortDescription = str(appDetails[steamId]['ShortDesc']) if appDetails[steamId]['ShortDesc'] else None
+      isMature = bool(appDetails[steamId]['IsMature']) if appDetails[steamId]['IsMature'] == False or appDetails[steamId]['IsMature'] == True else None
+      totalReviews = int(appDetails[steamId]['TotalReviews']) if appDetails[steamId]['TotalReviews'] else None
+      positiveReviews = int(appDetails[steamId]['PositiveReviews']) if appDetails[steamId]['PositiveReviews'] else None
+      updatedAt = datetime.now()
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
-      appDetailTuples.append((description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt, steamId))
+      if (isNew):
+        appDetailTuples.append((steamId, description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt))
+      else:
+        appDetailTuples.append((description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt, steamId))
   
   return appDetailTuples
 
@@ -48,17 +63,21 @@ def getPrice(appDetails, apps=None):
   # Apps should only be set to none when the info being passed is new and not already stored in the DB
   if (apps == None):
     for steamId in appDetails:
-      isFree = bool(appDetails[steamId]['IsFree']) if appDetails[steamId]['IsFree'] == False or appDetails[steamId]['IsFree'] == True else None
-      currency = str(appDetails[steamId]['Currency']) if appDetails[steamId]['Currency'] else None
-      originalPrice = int(appDetails[steamId]['OriginalPrice']) if appDetails[steamId]['OriginalPrice'] else None
-      discountPrice = int(appDetails[steamId]['DiscountPrice']) if appDetails[steamId]['DiscountPrice'] else None
-      validTo = '9999-12-31'
-      appPriceTuples.append((steamId, isFree, currency, originalPrice, discountPrice, validTo))
+      # Only Store apps that have details
+      if (appDetails[steamId]['HasDetails']):
+        isFree = bool(appDetails[steamId]['IsFree']) if appDetails[steamId]['IsFree'] == False or appDetails[steamId]['IsFree'] == True else None
+        currency = str(appDetails[steamId]['Currency']) if appDetails[steamId]['Currency'] else None
+        originalPrice = int(appDetails[steamId]['OriginalPrice']) if appDetails[steamId]['OriginalPrice'] else None
+        discountPrice = int(appDetails[steamId]['DiscountPrice']) if appDetails[steamId]['DiscountPrice'] else None
+        validTo = '9999-12-31'
+        appPriceTuples.append((steamId, isFree, currency, originalPrice, discountPrice, validTo))
   else:
     # Get updated Apps by id (used for query in the next step)
     steam_ids = []
     for steamId in appDetails:
-      steam_ids.append(int(steamId))
+      # Only Store apps that have details
+      if (appDetails[steamId]['HasDetails']):
+        steam_ids.append(int(steamId))
     
     # Get all old data for the Updated Apps
     load_dotenv()
@@ -83,6 +102,7 @@ def getPrice(appDetails, apps=None):
   return appPriceTuples
 
 # Upload New Apps
+@timing
 def storeNewApps(newAppsList):
   try:
     load_dotenv()
@@ -103,6 +123,7 @@ def storeNewApps(newAppsList):
     conn.close()
 
 # Upload New App Details
+@timing
 def storeNewAppDetails(newAppDetailsList):
   try:
     load_dotenv()
@@ -123,6 +144,7 @@ def storeNewAppDetails(newAppDetailsList):
     conn.close()
 
 # Store New App Prices
+@timing
 def storeNewAppPrices(newAppPriceList):
   try:
     load_dotenv()
@@ -144,6 +166,7 @@ def storeNewAppPrices(newAppPriceList):
 
 
 # Store Updated Apps
+@timing
 def storeUpdatedApps(updatedAppsList):
   try:
     load_dotenv()
@@ -164,6 +187,7 @@ def storeUpdatedApps(updatedAppsList):
     conn.close()
 
 # Store Updated App Details
+@timing
 def storeUpdatedAppDetails(updatedAppDetailsList):
   try:
     load_dotenv()
@@ -183,6 +207,8 @@ def storeUpdatedAppDetails(updatedAppDetailsList):
     print("\nclosing\n")
     conn.close()
 
+# Store Updated App prices
+@timing
 def storeUpdatedAppPrices(updatedAppPriceList):
   # get new tuple containing only ((valid_to, steam_id))
   updateTuple = []
