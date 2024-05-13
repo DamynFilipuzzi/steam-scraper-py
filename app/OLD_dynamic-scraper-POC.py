@@ -6,12 +6,10 @@ from bs4 import BeautifulSoup
 import json
 from tqdm import tqdm
 
+rate = 2
+
 # Run google chrome in headless mode (no browser popup)
 options = Options()
-# options.add_argument('--headless')
-# options.add_argument('--no-sandbox')
-# options.add_argument('--disable-dev-shm-usage')
-# AGRESSIVE: options.setPageLoadStrategy(PageLoadStrategy.NONE); // https://www.skptricks.com/2018/08/timed-out-receiving-message-from-renderer-selenium.html
 options.add_argument("start-maximized")
 options.add_argument("enable-automation")
 options.add_argument("--headless")
@@ -24,16 +22,20 @@ options.add_argument("--disable-gpu")
 driver = webdriver.Chrome(options=options)
 
 # Navigate to Google Search
-driver.get("https://store.steampowered.com/search/?category1=998&supportedlang=english&hidef2p=1&ndl=1&ignore_preferences=1")
+# driver.get("https://store.steampowered.com/search/?category1=998&supportedlang=english&hidef2p=1&ndl=1&ignore_preferences=1")
+driver.get("https://store.steampowered.com/search/?ignore_preferences=1&category1=998%2C21%2C990%2C996&ndl=1")
 # Define the number of times to scroll
-scroll_count = 5000
-# scroll_count = 5
+scroll_count = 10000
 
 # Simulate continuous scrolling using JavaScript
 for _ in tqdm(range(scroll_count), desc="Scrolling..."):
+  start = time.time()
   print('loading page: %s', _)
   driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-  time.sleep(2)  # Wait for the new results to load
+  totalTime = time.time() - start
+  delay = rate - totalTime
+  if (delay > 0):
+    time.sleep(delay)
 
 # Get the page source after scrolling
 page_source = driver.page_source
@@ -52,7 +54,7 @@ for result in tqdm(search_results, desc="Loading to memory..."):
   # Uses /sub/ data-ds-packageid="401587"
   # NOTE CURRENTLY NOT PULLING BUNDLE GAMES: WOULD NEED TO USE THIS URL IF GOING TO DO THAT: https://store.steampowered.com/search/?ignore_preferences=1&category1=998%2C996&supportedlang=english&hidef2p=1&ndl=1 
   # OR
-  # USES /bundle/ data-ds-bundleid="18052"
+  # TODO USES /bundle/ data-ds-bundleid="18052"
 
   if (result.get("data-ds-packageid") is not None):
     id = result.get("data-ds-packageid")
@@ -89,6 +91,7 @@ for result in tqdm(search_results, desc="Loading to memory..."):
 driver.quit()
 
 with open('/appdata/data.json', 'w', encoding='utf-8') as f:
+# with open('appdata/data.json', 'w', encoding='utf-8') as f:
   json.dump(games, f, ensure_ascii=False, indent=4)
 
 print(len(games))

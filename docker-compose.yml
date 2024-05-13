@@ -1,57 +1,45 @@
 services:
-  games-scraper:
+  apps-scraper:
     build: ./
-    command: python3 ./dynamic-scraper-POC.py
+    command: python3 ./apps-scraper.py
     volumes:
       - ./appdata:/appdata
 
-  game-info-scraper:
+  app-details-scraper:
     build: ./
-    command: python3 ./game-info-scraper.py
-    volumes:
-      - ./appdata:/appdata
-    depends_on:
-      games-scraper:
-        condition: service_completed_successfully
-
-  game-tag-creator:
-    build: ./
-    command: python3 ./game-tag-creator.py
+    command: python3 ./app-details-scraper.py
     volumes:
       - ./appdata:/appdata
     depends_on:
-      games-scraper:
+      apps-scraper:
         condition: service_completed_successfully
 
-  games-uploader:
+  apps-details-prices-uploader:
     build: ./
-    command: python3 ./games-uploader.py
+    command: python3 ./apps-details-prices-uploader.py
     volumes:
       - ./appdata:/appdata
     depends_on:
-      games-scraper:
+      apps-scraper:
         condition: service_completed_successfully
-
-  games-info-uploader:
-    build: ./
-    command: python3 ./games-uplooader.py
-    volumes:
-      - ./appdata:/appdata
-    depends_on:
-      game-info-scraper:
+      app-details-scraper:
         condition: service_completed_successfully
+# TODO UPDATE and Add tags-creator and tags-uploader
 
-  game-tag-uploader:
-    build: ./
-    command: python3 ./game-tag-uploader.py
-    volumes:
-      - ./appdata:/appdata
-    depends_on:
-      game-tag-creator:
-        condition: service_completed_successfully
+# game-tag-creator:
+#   build: ./
+#   command: python3 ./game-tag-creator.py
+#   volumes:
+#     - ./appdata:/appdata
+#   depends_on:
+#     games-scraper:
+#       condition: service_completed_successfully
 
-  # my-test:
-  #   image: ubuntu
-  #   command: bash -c "while true; do echo hello; sleep 2; done"
-  #   volumes:
-  #     - ./appdata:/appdata
+# game-tag-uploader:
+#   build: ./
+#   command: python3 ./game-tag-uploader.py
+#   volumes:
+#     - ./appdata:/appdata
+#   depends_on:
+#     game-tag-creator:
+#       condition: service_completed_successfully

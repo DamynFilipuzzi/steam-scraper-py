@@ -11,7 +11,7 @@ load_dotenv()
 # Get the connection string from the environment variable
 connection_string = os.getenv('DATABASE_URL_PYTHON')
 
-# connect to vercel hosted database
+# connect to database
 conn = psycopg2.connect(connection_string)
 cur = conn.cursor()
 
