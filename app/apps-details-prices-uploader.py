@@ -30,7 +30,7 @@ def getApps(apps, appDetails, isNew):
       discountPrice = int(appDetails[steamId]['DiscountPrice']) if appDetails[steamId]['DiscountPrice'] else None
       lastModified = int(apps[steamId]['last_modified'])
       priceChangeNumber = int(apps[steamId]['price_change_number'])
-      updatedAt = datetime.now()
+      updatedAt = apps[steamId]['updated_at']
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
       if (isNew):
         appTuples.append((steamId, title, type, originalPrice, discountPrice, lastModified, priceChangeNumber, updatedAt))
@@ -49,7 +49,7 @@ def getDetails(appDetails, isNew):
       isMature = bool(appDetails[steamId]['IsMature']) if appDetails[steamId]['IsMature'] == False or appDetails[steamId]['IsMature'] == True else None
       totalReviews = int(appDetails[steamId]['TotalReviews']) if appDetails[steamId]['TotalReviews'] else None
       positiveReviews = int(appDetails[steamId]['PositiveReviews']) if appDetails[steamId]['PositiveReviews'] else None
-      updatedAt = datetime.now()
+      updatedAt = appDetails[steamId]['UpdatedAt']
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
       if (isNew):
         appDetailTuples.append((steamId, description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt))

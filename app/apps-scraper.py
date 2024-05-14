@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import requests
 import json
 import time
+from datetime import datetime
 
 start = time.time()
 payload = {}
@@ -21,7 +22,7 @@ while (hasMoreResults):
   results = json.loads(response.text)
   if ("apps" in results['response']):
     for game in results['response']['apps']:
-      apps[game['appid']] = {"title": game['name'], "last_modified": game['last_modified'], "price_change_number": game['price_change_number']}
+      apps[game['appid']] = {"title": game['name'], "last_modified": game['last_modified'], "price_change_number": game['price_change_number'], "updated_at": datetime.now()}
     if ("have_more_results" in results['response']):
       if (results['response']["have_more_results"] == True):
         lastAppId = results['response']['last_appid']

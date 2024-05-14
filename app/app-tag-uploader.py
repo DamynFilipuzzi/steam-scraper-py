@@ -37,6 +37,7 @@ for e in tqdm(data, desc="Inserting Records..."):
       print("Game Does not exist in DB")
 
 
+
 print("\nclosing\n")
 conn.commit()
 conn.close()

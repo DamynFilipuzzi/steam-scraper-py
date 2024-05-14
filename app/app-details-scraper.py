@@ -6,10 +6,11 @@ import requests
 import json
 from tqdm import tqdm
 import time
+from datetime import datetime
 
 def getNewApps():
   # Read data to insert from file
-  file = open('/appdata/apps.json', encoding="utf-8")
+  file = open('appdata/apps.json', encoding="utf-8")
   data = json.load(file)
 
   return data
@@ -51,7 +52,7 @@ def getDetails(appData):
     appDetails = dict()
     for app in tqdm(appData, desc="Retrieving App Details..."):
       start = time.time()
-      url = "https://store.steampowered.com/api/appdetails?appids={app}".format(app=app)
+      url = "https://store.steampowered.com/api/appdetails?appids={app}&cc=CA".format(app=app)
       response = requests.request("GET", url, headers=headers)
       # Check that status code is of type success
       if (response.status_code == 200 and len(response.text) > 0):
@@ -71,20 +72,8 @@ def getDetails(appData):
               if  (results[str(app)]['data']['price_overview']['currency'] == "CAD" or results[str(app)]['data']['price_overview']['currency'] == None): 
                 currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
               else:
-                # if currency is not in CAD then retry the request 15 times to get the proper value. This seems to be a steam api issue.
-                print(results[str(app)]['data']['price_overview']['currency'], app)
-                for i in range(15):
-                  time.sleep(10)
-                  response = requests.request("GET", url, headers=headers)
-                  if (response.status_code == 200 and len(response.text) > 0):
-                    results = json.loads(response.text)
-                    print (results[str(app)]['data']['price_overview']['currency'], app)
-                    if (results[str(app)]['data']['price_overview']['currency'] == "CAD" or results[str(app)]['data']['price_overview']['currency'] == None): 
-                      currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
-                      break
-                    else:
-                      currency = ""
-              
+                currency = ""
+                
               originalPrice = results[str(app)]['data']['price_overview']['initial'] if results[str(app)]['data']['price_overview']['initial'] != None else None
               discountPrice = results[str(app)]['data']['price_overview']['final'] if results[str(app)]['data']['price_overview']['final'] != None else None
             else:
@@ -163,7 +152,7 @@ def getDetails(appData):
       if (delay > 0):
         time.sleep(delay)
 
-      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews})
+      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "UpdatedAt": datetime.now()})
 
   else:
     appDetails = None
@@ -188,7 +177,7 @@ print("Retrieving Info for ", len(updatedApps), "Updated Apps")
 updatedAppDetails = getDetails(updatedApps)
 
 # Write data to files
-with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
+with open('appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
   json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-with open('/appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
+with open('appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
   json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
