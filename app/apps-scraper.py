@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import requests
 import json
 import time
@@ -7,12 +9,14 @@ payload = {}
 headers = {
   'Cookie': 'Cookie_1=value; browserid=3435760192849254767; steamCountry=CA%7Cb3495110b69ce3b66ffa45eaed107e4b'
 }
+load_dotenv()
+apiKey = os.getenv('STEAM_API_KEY')
 
 apps = dict()
 hasMoreResults = True
 lastAppId = ''
 while (hasMoreResults):
-  url = "https://api.steampowered.com/IStoreService/GetAppList/v1/?key=B395DF29FCF1147B70EA8EC0FEED516F&include_games=true&include_dlc=false&include_software=false&include_videos=false&include_hardware=false&max_results=50000&last_appid={lastID}&have_description_language=english".format(lastID=lastAppId)
+  url = "https://api.steampowered.com/IStoreService/GetAppList/v1/?key={key}&include_games=true&include_dlc=false&include_software=false&include_videos=false&include_hardware=false&max_results=50000&last_appid={lastID}&have_description_language=english".format(lastID=lastAppId, key=apiKey)
   response = requests.request("GET", url, headers=headers, data=payload)
   results = json.loads(response.text)
   if ("apps" in results['response']):
