@@ -11,8 +11,7 @@ def getNewApps():
   # Read data to insert from file
   file = open('/appdata/apps.json', encoding="utf-8")
   data = json.load(file)
-  print("Retrieving Info for ", len(data), " Apps")
-  
+
   return data
 
 def getOldApps():
@@ -79,7 +78,7 @@ def getDetails(appData):
             if (reviewsResponse.status_code == 200 and len(reviewsResponse.text) > 0):
               reviewsResults = json.loads(reviewsResponse.text)
               if (reviewsResults['success'] == 1):
-                if ("query_summary" in reviewsResults['query_summary']):
+                if ("query_summary" in reviewsResults):
                   positiveReviews = reviewsResults['query_summary']['total_positive'] if reviewsResults['query_summary']['total_positive'] != None else None
                   totalReviews = reviewsResults['query_summary']['total_reviews'] if reviewsResults['query_summary']['total_reviews'] != None else None
                 else:
@@ -163,7 +162,10 @@ oldAppsList = getOldApps()
 (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
 
 # Retrieve New and updated app details 
+print("Retrieving Info for ", len(newApps), "NEW Apps")
 newAppDetails = getDetails(newApps)
+
+print("Retrieving Info for ", len(updatedApps), "Updated Apps")
 updatedAppDetails = getDetails(updatedApps)
 
 # Write data to files
