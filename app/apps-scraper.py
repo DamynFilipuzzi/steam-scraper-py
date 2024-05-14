@@ -10,7 +10,7 @@ apps = dict()
 hasMoreResults = True
 lastAppId = ''
 while (hasMoreResults):
-  url = "https://api.steampowered.com/IStoreService/GetAppList/v1/?key=B395DF29FCF1147B70EA8EC0FEED516F&include_games=true&include_dlc=false&include_software=false&include_videos=false&include_hardware=false&max_results=10&last_appid={lastID}&have_description_language=english".format(lastID=lastAppId)
+  url = "https://api.steampowered.com/IStoreService/GetAppList/v1/?key=B395DF29FCF1147B70EA8EC0FEED516F&include_games=true&include_dlc=false&include_software=false&include_videos=false&include_hardware=false&max_results=50000&last_appid={lastID}&have_description_language=english".format(lastID=lastAppId)
   response = requests.request("GET", url, headers=headers, data=payload)
   results = json.loads(response.text)
   if ("apps" in results['response']):
