@@ -10,7 +10,7 @@ from datetime import datetime
 
 def getNewApps():
   # Read data to insert from file
-  file = open('appdata/apps.json', encoding="utf-8")
+  file = open('/appdata/apps.json', encoding="utf-8")
   data = json.load(file)
 
   return data
@@ -43,9 +43,6 @@ def getNewAndUpdatedApps(data, oldAppsList):
   return (newApps, updatedApps)
 
 def getDetails(appData):
-  headers = {
-    'Cookie': 'Cookie_1=value; browserid=3435760192849254767; steamCountry=CA%7Cb3495110b69ce3b66ffa45eaed107e4b'
-  }
   if (appData != None):
     # Rate at which each request can be made. 
     rate = 1.5
@@ -53,7 +50,7 @@ def getDetails(appData):
     for app in tqdm(appData, desc="Retrieving App Details..."):
       start = time.time()
       url = "https://store.steampowered.com/api/appdetails?appids={app}&cc=CA".format(app=app)
-      response = requests.request("GET", url, headers=headers)
+      response = requests.request("GET", url)
       # Check that status code is of type success
       if (response.status_code == 200 and len(response.text) > 0):
         results = json.loads(response.text)
@@ -82,7 +79,7 @@ def getDetails(appData):
               discountPrice = None
             # Query AppReviews
             reviewsUrl = "https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=app)
-            reviewsResponse = requests.request("GET", reviewsUrl, headers=headers)
+            reviewsResponse = requests.request("GET", reviewsUrl)
             if (reviewsResponse.status_code == 200 and len(reviewsResponse.text) > 0):
               reviewsResults = json.loads(reviewsResponse.text)
               if (reviewsResults['success'] == 1):
@@ -152,7 +149,7 @@ def getDetails(appData):
       if (delay > 0):
         time.sleep(delay)
 
-      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "UpdatedAt": datetime.now()})
+      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "UpdatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
   else:
     appDetails = None
