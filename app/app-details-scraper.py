@@ -73,7 +73,7 @@ def getDetails(appData):
                 currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
               else:
                 currency = ""
-                
+
               originalPrice = results[str(app)]['data']['price_overview']['initial'] if results[str(app)]['data']['price_overview']['initial'] != None else None
               discountPrice = results[str(app)]['data']['price_overview']['final'] if results[str(app)]['data']['price_overview']['final'] != None else None
             else:
@@ -177,7 +177,7 @@ print("Retrieving Info for ", len(updatedApps), "Updated Apps")
 updatedAppDetails = getDetails(updatedApps)
 
 # Write data to files
-with open('appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
+with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
   json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-with open('appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
+with open('/appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
   json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
