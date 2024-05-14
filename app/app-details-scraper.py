@@ -42,6 +42,9 @@ def getNewAndUpdatedApps(data, oldAppsList):
   return (newApps, updatedApps)
 
 def getDetails(appData):
+  headers = {
+    'Cookie': 'Cookie_1=value; browserid=3435760192849254767; steamCountry=CA%7Cb3495110b69ce3b66ffa45eaed107e4b'
+  }
   if (appData != None):
     # Rate at which each request can be made. 
     rate = 1.5
@@ -49,7 +52,7 @@ def getDetails(appData):
     for app in tqdm(appData, desc="Retrieving App Details..."):
       start = time.time()
       url = "https://store.steampowered.com/api/appdetails?appids={app}".format(app=app)
-      response = requests.request("GET", url)
+      response = requests.request("GET", url, headers=headers)
       # Check that status code is of type success
       if (response.status_code == 200 and len(response.text) > 0):
         results = json.loads(response.text)
@@ -65,7 +68,23 @@ def getDetails(appData):
             isMature = True if results[str(app)]['data']['required_age'] == 0 else False
             # Get info in Price_Overview
             if ("price_overview" in results[str(app)]['data']):
-              currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
+              if  (results[str(app)]['data']['price_overview']['currency'] == "CAD" or results[str(app)]['data']['price_overview']['currency'] == None): 
+                currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
+              else:
+                # if currency is not in CAD then retry the request 15 times to get the proper value. This seems to be a steam api issue.
+                print(results[str(app)]['data']['price_overview']['currency'], app)
+                for i in range(15):
+                  time.sleep(10)
+                  response = requests.request("GET", url, headers=headers)
+                  if (response.status_code == 200 and len(response.text) > 0):
+                    results = json.loads(response.text)
+                    print (results[str(app)]['data']['price_overview']['currency'], app)
+                    if (results[str(app)]['data']['price_overview']['currency'] == "CAD" or results[str(app)]['data']['price_overview']['currency'] == None): 
+                      currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
+                      break
+                    else:
+                      currency = ""
+              
               originalPrice = results[str(app)]['data']['price_overview']['initial'] if results[str(app)]['data']['price_overview']['initial'] != None else None
               discountPrice = results[str(app)]['data']['price_overview']['final'] if results[str(app)]['data']['price_overview']['final'] != None else None
             else:
@@ -74,7 +93,7 @@ def getDetails(appData):
               discountPrice = None
             # Query AppReviews
             reviewsUrl = "https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=app)
-            reviewsResponse = requests.request("GET", reviewsUrl)
+            reviewsResponse = requests.request("GET", reviewsUrl, headers=headers)
             if (reviewsResponse.status_code == 200 and len(reviewsResponse.text) > 0):
               reviewsResults = json.loads(reviewsResponse.text)
               if (reviewsResults['success'] == 1):

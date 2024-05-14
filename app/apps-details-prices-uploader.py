@@ -11,12 +11,12 @@ import time
 
 def timing(f):
     def wrap(*args, **kwargs):
-        time1 = time.time()
-        ret = f(*args, **kwargs)
-        time2 = time.time()
-        print('{:s} function took {:.3f} ms \n'.format(f.__name__, (time2-time1)*1000.0))
+      time1 = time.time()
+      ret = f(*args, **kwargs)
+      time2 = time.time()
+      print('{:s} function took {:.3f} ms \n'.format(f.__name__, (time2-time1)*1000.0))
 
-        return ret
+      return ret
     return wrap
 
 def getApps(apps, appDetails, isNew):

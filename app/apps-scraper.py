@@ -4,7 +4,9 @@ import time
 
 start = time.time()
 payload = {}
-headers = {}
+headers = {
+  'Cookie': 'Cookie_1=value; browserid=3435760192849254767; steamCountry=CA%7Cb3495110b69ce3b66ffa45eaed107e4b'
+}
 
 apps = dict()
 hasMoreResults = True
@@ -26,7 +28,7 @@ while (hasMoreResults):
   else:
     hasMoreResults = False
 
-with open('appdata/apps.json', 'w', encoding='utf-8') as f:
+with open('/appdata/apps.json', 'w', encoding='utf-8') as f:
   json.dump(apps, f, ensure_ascii=False, indent=4)
 
 end = time.time()
