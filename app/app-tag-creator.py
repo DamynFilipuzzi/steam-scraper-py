@@ -4,20 +4,23 @@ import roman
 import unidecode
 
 # Read data to insert from file
-file = open('/appdata/data.json', encoding="utf-8")
+# TODO: use newAppDetails.json to verify instead of all apps from apps.json
+file = open('appdata/apps.json', encoding="utf-8")
 data = json.load(file)
 
 gameTag = dict()
 # Insert entry into games table if it does not exist.
 for e in tqdm(data, desc="Tokenizing titles"):
   steamID = e
-  title = str(data[e]['Title'])
-
-  title = title.replace('™', '').replace('®', '').replace("'", '').replace(':', '').replace('-', '').replace('!', '')
+  title = str(data[e]['title'])
+  
+  title = title.strip()
+  title = title.replace('™', '').replace('®', '').replace("'", '').replace(':', '').replace('-', ' ').replace('!', '')
 
   titleSplit = title.split(' ')
   
   # Remove empty fields
+  # TODO: FIX. Not working
   for word in titleSplit:
     if (word == ''):
       titleSplit.remove('')
@@ -41,7 +44,7 @@ for e in tqdm(data, desc="Tokenizing titles"):
     i += 1
   gameTag[steamID] = titleSplit
 
-with open('/appdata/tags.json', 'w', encoding='utf-8') as f:
+with open('appdata/appTags.json', 'w', encoding='utf-8') as f:
   json.dump(gameTag, f, ensure_ascii=False, indent=4)
 
 print(len(gameTag))

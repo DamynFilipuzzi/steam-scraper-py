@@ -61,16 +61,12 @@ def getDetails(appData):
             hasDetails = True
             type = results[str(app)]['data']['type'] if results[str(app)]['data']['type'] != None else None
             isFree = results[str(app)]['data']['is_free'] if results[str(app)]['data']['is_free'] != None else None
-            desc = results[str(app)]['data']['detailed_description'] if results[str(app)]['data']['detailed_description'] != None else None
+            desc = results[str(app)]['data']['about_the_game'] if results[str(app)]['data']['about_the_game'] != None else None
             shortDesc = results[str(app)]['data']['short_description'] if results[str(app)]['data']['short_description'] != None else None
-            isMature = True if results[str(app)]['data']['required_age'] == 0 else False
+            isMature = False if results[str(app)]['data']['required_age'] == 0 else True
             # Get info in Price_Overview
-            if ("price_overview" in results[str(app)]['data']):
-              if  (results[str(app)]['data']['price_overview']['currency'] == "CAD" or results[str(app)]['data']['price_overview']['currency'] == None): 
-                currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
-              else:
-                currency = ""
-
+            if ("price_overview" in results[str(app)]['data']): 
+              currency = results[str(app)]['data']['price_overview']['currency'] if results[str(app)]['data']['price_overview']['currency'] != None else None
               originalPrice = results[str(app)]['data']['price_overview']['initial'] if results[str(app)]['data']['price_overview']['initial'] != None else None
               discountPrice = results[str(app)]['data']['price_overview']['final'] if results[str(app)]['data']['price_overview']['final'] != None else None
             else:
@@ -84,8 +80,14 @@ def getDetails(appData):
               reviewsResults = json.loads(reviewsResponse.text)
               if (reviewsResults['success'] == 1):
                 if ("query_summary" in reviewsResults):
-                  positiveReviews = reviewsResults['query_summary']['total_positive'] if reviewsResults['query_summary']['total_positive'] != None else None
-                  totalReviews = reviewsResults['query_summary']['total_reviews'] if reviewsResults['query_summary']['total_reviews'] != None else None
+                  if ('total_positive' in reviewsResults['query_summary']):
+                    positiveReviews = reviewsResults['query_summary']['total_positive'] if reviewsResults['query_summary']['total_positive'] != None else None
+                  else:
+                    positiveReviews = None
+                  if ('total_reviews' in reviewsResults['query_summary']):
+                    totalReviews = reviewsResults['query_summary']['total_reviews'] if reviewsResults['query_summary']['total_reviews'] != None else None
+                  else:
+                    totalReviews = None
                 else:
                   positiveReviews = None
                   totalReviews = None
