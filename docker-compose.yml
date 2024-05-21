@@ -5,6 +5,12 @@ services:
     volumes:
       - ./appdata:/appdata
 
+  tags-creator:
+    build: ./
+    command: python3 ./tags-creator.py
+    volumes:
+      - ./appdata:/appdata
+
   app-details-scraper:
     build: ./
     command: python3 ./app-details-scraper.py
@@ -13,8 +19,10 @@ services:
     depends_on:
       apps-scraper:
         condition: service_completed_successfully
+      tags-creator:
+        condition: service_completed_successfully
 
-  apps-details-prices-uploader:
+  uploader:
     build: ./
     command: python3 ./apps-details-prices-uploader.py
     volumes:
@@ -23,6 +31,8 @@ services:
       apps-scraper:
         condition: service_completed_successfully
       app-details-scraper:
+        condition: service_completed_successfully
+      tags-creator:
         condition: service_completed_successfully
 # TODO UPDATE and Add tags-creator and tags-uploader
 

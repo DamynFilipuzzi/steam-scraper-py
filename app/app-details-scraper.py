@@ -8,6 +8,36 @@ from tqdm import tqdm
 import time
 from datetime import datetime
 
+def getTags():
+  # Get all apps from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * FROM "Tags"')
+  tagsOld = cur.fetchall()
+  oldTagsList = dict()
+  for tag in tagsOld:
+    oldTagsList[tag[2]] = ({"id:": tag[0], "tag_id": tag[1], "tag_name": tag[2]})
+  cur.close()
+  
+  return oldTagsList
+
+def getAppsTags():
+  # Get all apps from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * FROM "Apps_Tags"')
+  appsTagsOld = cur.fetchall()
+  cur.close()
+  oldAppsTagsList = dict()
+  for tag in appsTagsOld:
+    oldAppsTagsList.setdefault(tag[0], {})[tag[1]] = 0
+  
+  return oldAppsTagsList
+
 def getNewApps():
   # Read data to insert from file
   file = open('/appdata/apps.json', encoding="utf-8")
@@ -46,6 +76,7 @@ def getDetails(appData):
   if (appData != None):
     # Rate at which each request can be made. 
     rate = 1.5
+    appTags = dict()
     appDetails = dict()
     for app in tqdm(appData, desc="Retrieving App Details..."):
       start = time.time()
@@ -73,6 +104,18 @@ def getDetails(appData):
               currency = None
               originalPrice = None
               discountPrice = None
+            
+            # get AppTags
+            if ('genres' in results[str(app)]['data']):
+              for tag in results[str(app)]['data']['genres']:
+                if (tag['description'] in oldTags):
+                  tagId = int(oldTags[tag['description']]['tag_id'])
+                  if (int(app) in oldAppsTags):
+                    if (int(tagId) not in oldAppsTags[int(app)]):
+                      appTags.setdefault(app, {})[oldTags[tag['description']]['tag_id']] = tag['description']
+                  else:
+                    appTags.setdefault(app, {})[oldTags[tag['description']]['tag_id']] = tag['description']
+                  
             # Query AppReviews
             reviewsUrl = "https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=app)
             reviewsResponse = requests.request("GET", reviewsUrl)
@@ -156,11 +199,15 @@ def getDetails(appData):
   else:
     appDetails = None
   
-  return appDetails
+  return (appDetails, appTags)
 
 ###############################################################################################
 ###############################################################################################
 
+# Retrieves all old tags from db
+oldTags = getTags()
+# Retrieves all old Apps_tags from db
+oldAppsTags = getAppsTags()
 # Retrieves new apps from file
 data = getNewApps()
 # Retrieves old apps from db
@@ -170,13 +217,17 @@ oldAppsList = getOldApps()
 
 # Retrieve New and updated app details 
 print("Retrieving Info for ", len(newApps), "NEW Apps")
-newAppDetails = getDetails(newApps)
+(newAppDetails, newAppsTags) = getDetails(newApps)
 
 print("Retrieving Info for ", len(updatedApps), "Updated Apps")
-updatedAppDetails = getDetails(updatedApps)
+(updatedAppDetails, updatedAppsTags) = getDetails(updatedApps)
 
 # Write data to files
 with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
   json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
 with open('/appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
   json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
+with open('/appdata/newAppsTags.json', 'w', encoding='utf-8') as f:
+  json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
+with open('/appdata/updatedAppsTags.json', 'w', encoding='utf-8') as f:
+  json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)

@@ -253,17 +253,93 @@ def storeUpdatedAppPrices(updatedAppPriceList):
     print("\nclosing\n")
     conn.close()
 
+# Store New App Tags
+@timing
+def storeNewAppsTags(tags):
+  appTagsTuple = []
+  for app in tags:
+    for tag in tags[app]:
+      appTagsTuple.append((int(app), int(tag)))
+
+  # Insert into Apps_Tags table
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps_Tags" (steam_id, tag_id) VALUES (%s, %s)""", appTagsTuple)
+    conn.commit()
+    print("Storing: {appTagsTuple} new Apps_Tags.".format(appTagsTuple=len(appTagsTuple)))
+  except Exception as error:
+    print("Failed to store New Apps_tags")
+    logging.info("Failed to store New Apps_tags")
+    logging.critical(appTagsTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+# Store New App Tags
+# @timing
+# def storeUpdatedAppsTags(tags):
+#   # Get updated Apps by id (used for query in the next step)
+#   steam_ids = []
+#   for steamId in tags:
+#     steam_ids.append(int(steamId))
+  
+#   # Get all old data for the Updated Apps_Tags
+#   load_dotenv()
+#   connection_string = os.getenv('DATABASE_URL_PYTHON')
+#   conn = psycopg2.connect(connection_string)
+#   cur = conn.cursor()
+#   cur.execute('SELECT * FROM "Apps_Tags" WHERE "steam_id" = ANY(%s)', [steam_ids])
+#   results = cur.fetchall()
+#   cur.close()
+
+#   print(results)
+
+#   newAppTagsTuple = []
+
+
+
+  # for app in tags:
+  #   for tag in tags[app]:
+  #     if (results[int(app)][int(tag)] == None):
+  #       newAppTagsTuple.append((int(app), int(tag)))
+  
+  # Do a reverse check to ensure that there has been no deleted tags
+  
+  # print(len(newAppTagsTuple))
+  
+  # 1. Insert any new tags.
+  # try:
+  #   load_dotenv()
+  #   connection_string = os.getenv('DATABASE_URL_PYTHON')
+  #   conn = psycopg2.connect(connection_string)
+  #   cur = conn.cursor()
+  #   psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps_Tags" (steam_id, tag_id) VALUES (%s, %s)""", newAppTagsTuple)
+  #   conn.commit()
+  #   print("Storing: {appTagsTuple} new Apps_Tags.".format(appTagsTuple=len(newAppTagsTuple)))
+  # except Exception as error:
+  #   print("Failed to store New Apps_tags")
+  #   logging.info("Failed to store New Apps_tags")
+  #   logging.critical(newAppTagsTuple)
+  #   logging.critical(error)
+  #   sys.exit(1)
+  # finally:
+  #   print("\nclosing\n")
+  #   conn.close()
+  
+  # 2. delete any tags that no longer exist
+
 
 #########################################################################################
 #########################################################################################
 #########################################################################################
 
 def main():
-  logging.basicConfig(filename="/appdata/logs/app-and-info.log",
-                      filemode='a',
-                      format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                      datefmt='%H:%M:%S',
-                      level=logging.DEBUG)
+  logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
 
   # Get all Apps Details
   file = open('/appdata/apps.json', encoding="utf-8")
@@ -274,6 +350,12 @@ def main():
   # Get Updated App Details
   file = open('/appdata/updatedAppDetails.json', encoding="utf-8")
   updatedAppDetails = json.load(file)
+  # Get New Tags
+  file = open('/appdata/newAppsTags.json', encoding="utf-8")
+  newAppsTags = json.load(file)
+  # Get Updated Tags
+  file = open('/appdata/updatedAppsTags.json', encoding="utf-8")
+  updatedAppsTags = json.load(file)
 
   # Get App Tuples
   newAppsList = getApps(apps, newAppDetails, isNew=True)
@@ -287,20 +369,15 @@ def main():
   newAppPriceList = getPrice(newAppDetails, apps=None)
   updatedAppPriceList = getPrice(updatedAppDetails, apps=apps)
 
-  # Store New Apps
   storeNewApps(newAppsList)
-  # store New App Details
   storeNewAppDetails(newAppDetailsList)
-  # Store New App Prices
   storeNewAppPrices(newAppPriceList)
-  # ***storeUpdatedAppPrices() MUST RUN BEFORE storeUpdatedApps() Otherwise the price_change_number will be altered before validation***
-  # Store Updated Price
+  # ***storeUpdatedAppPrices() MUST RUN BEFORE storeUpdatedApps() Otherwise the price_change_number will be altered before validation step***
   storeUpdatedAppPrices(updatedAppPriceList)
-  # Store Updated Apps
   storeUpdatedApps(updatedAppsList)
-  # Store Updated App Details
   storeUpdatedAppDetails(updatedAppDetailsList)
-
+  storeNewAppsTags(newAppsTags)
+  storeNewAppsTags(updatedAppsTags)
 
 if __name__ == '__main__':
   main()
