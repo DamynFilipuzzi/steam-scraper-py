@@ -112,6 +112,7 @@ def storeNewApps(newAppsList):
     psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps" (steam_id, title, type, original_price, discount_price, last_modified, price_change_number, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", newAppsList)
     conn.commit()
     print("Storing: {lenNewApps} new apps.".format(lenNewApps=len(newAppsList)))
+    logging.info("Storing: {lenNewApps} new apps.".format(lenNewApps=len(newAppsList)))
   except Exception as error:
     print('Failed to store New App')
     logging.info("Failed to store New App")
@@ -133,6 +134,7 @@ def storeNewAppDetails(newAppDetailsList):
     psycopg2.extras.execute_batch(cur, """INSERT INTO "App_Info" (steam_id, description, short_description, is_mature, total_reviews, total_positive_reviews, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s)""", newAppDetailsList)
     conn.commit()
     print("Storing: {lenNewAppDetailsList} new app Details.".format(lenNewAppDetailsList=len(newAppDetailsList)))
+    logging.info("Storing: {lenNewAppDetailsList} new app Details.".format(lenNewAppDetailsList=len(newAppDetailsList)))
   except Exception as error:
     print("Failed to store New App Details")
     logging.info("Failed to store New App Details")
@@ -154,6 +156,7 @@ def storeNewAppPrices(newAppPriceList):
     psycopg2.extras.execute_batch(cur, """INSERT INTO "Prices" (steam_id, is_free, currency, original_price, discount_price, valid_to) VALUES (%s, %s, %s, %s, %s, %s)""", newAppPriceList)
     conn.commit()
     print("Storing: {lenNewAppPriceList} new app Prices.".format(lenNewAppPriceList=len(newAppPriceList)))
+    logging.info("Storing: {lenNewAppPriceList} new app Prices.".format(lenNewAppPriceList=len(newAppPriceList)))
   except Exception as error:
     print("Failed to store New App Prices")
     logging.info("Failed to store New App Prices")
@@ -176,6 +179,7 @@ def storeUpdatedApps(updatedAppsList):
     psycopg2.extras.execute_batch(cur, """UPDATE "Apps" SET title=%s, type=%s, original_price=%s, discount_price=%s, last_modified=%s, price_change_number=%s, updated_at=%s WHERE steam_id=%s""", updatedAppsList)
     conn.commit()
     print("Storing: {lenUpdatedAppsList} updated apps.".format(lenUpdatedAppsList=len(updatedAppsList)))
+    logging.info("Storing: {lenUpdatedAppsList} updated apps.".format(lenUpdatedAppsList=len(updatedAppsList)))
   except Exception as error:
     print("Failed to store Updated App")
     logging.info("Failed to store Updated App")
@@ -197,6 +201,7 @@ def storeUpdatedAppDetails(updatedAppDetailsList):
     psycopg2.extras.execute_batch(cur, """UPDATE "App_Info" SET description=%s, short_description=%s, is_mature=%s, total_reviews=%s, total_positive_reviews=%s, updated_at=%s WHERE steam_id=%s""", updatedAppDetailsList)
     conn.commit()
     print("Storing: {lenUpdatedAppDetailsList} updated app Details.".format(lenUpdatedAppDetailsList=len(updatedAppDetailsList)))
+    logging.info("Storing: {lenUpdatedAppDetailsList} updated app Details.".format(lenUpdatedAppDetailsList=len(updatedAppDetailsList)))
   except Exception as error:
     print("Failed to store Updated App Details")
     logging.info("Failed to store Updated App Details")
@@ -224,6 +229,7 @@ def storeUpdatedAppPrices(updatedAppPriceList):
     psycopg2.extras.execute_batch(cur, """UPDATE "Prices" SET valid_to=%s WHERE steam_id=%s""", updateTuple)
     conn.commit()
     print("Storing: {lenUpdateTuple} updated app Prices.".format(lenUpdateTuple=len(updateTuple)))
+    logging.info("Storing: {lenUpdateTuple} updated app Prices.".format(lenUpdateTuple=len(updateTuple)))
   except Exception as error:
     print("Failed to store Updated App Prices")
     logging.info("Failed to store Updated App Prices")
@@ -243,6 +249,7 @@ def storeUpdatedAppPrices(updatedAppPriceList):
     psycopg2.extras.execute_batch(cur, """INSERT INTO "Prices" (steam_id, is_free, currency, original_price, discount_price, valid_to) VALUES (%s, %s, %s, %s, %s, %s)""", updatedAppPriceList)
     conn.commit()
     print("Storing: {lenUpdatedAppPriceList} new UPDATED app Prices.".format(lenUpdatedAppPriceList=len(updatedAppPriceList)))
+    logging.info("Storing: {lenUpdatedAppPriceList} new UPDATED app Prices.".format(lenUpdatedAppPriceList=len(updatedAppPriceList)))
   except Exception as error:
     print("Failed to store New App Prices")
     logging.info("Failed to store New App Prices")
@@ -270,6 +277,7 @@ def storeNewAppsTags(tags):
     psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps_Tags" (steam_id, tag_id) VALUES (%s, %s)""", appTagsTuple)
     conn.commit()
     print("Storing: {appTagsTuple} new Apps_Tags.".format(appTagsTuple=len(appTagsTuple)))
+    logging.info("Storing: {appTagsTuple} new Apps_Tags.".format(appTagsTuple=len(appTagsTuple)))
   except Exception as error:
     print("Failed to store New Apps_tags")
     logging.info("Failed to store New Apps_tags")
