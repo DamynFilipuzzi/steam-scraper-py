@@ -90,7 +90,7 @@ def getPrice(appDetails, apps=None):
 
     # Store the updated prices in the App Price Tuple
     for app in results:
-      if (app[7] != apps[str(app[1])]['price_change_number']):
+      if (app[7] != apps[str(app[1])]['price_change_number'] and (app[5] != appDetails[steamId]['DiscountPrice'] or app[4] != appDetails[steamId]['OriginalPrice'])):
         steamId = str(app[1])
         isFree = bool(appDetails[steamId]['IsFree']) if appDetails[steamId]['IsFree'] == False or appDetails[steamId]['IsFree'] == True else None
         currency = str(appDetails[steamId]['Currency']) if appDetails[steamId]['Currency'] else None
@@ -287,60 +287,6 @@ def storeNewAppsTags(tags):
   finally:
     print("\nclosing\n")
     conn.close()
-
-# Store New App Tags
-# @timing
-# def storeUpdatedAppsTags(tags):
-#   # Get updated Apps by id (used for query in the next step)
-#   steam_ids = []
-#   for steamId in tags:
-#     steam_ids.append(int(steamId))
-  
-#   # Get all old data for the Updated Apps_Tags
-#   load_dotenv()
-#   connection_string = os.getenv('DATABASE_URL_PYTHON')
-#   conn = psycopg2.connect(connection_string)
-#   cur = conn.cursor()
-#   cur.execute('SELECT * FROM "Apps_Tags" WHERE "steam_id" = ANY(%s)', [steam_ids])
-#   results = cur.fetchall()
-#   cur.close()
-
-#   print(results)
-
-#   newAppTagsTuple = []
-
-
-
-  # for app in tags:
-  #   for tag in tags[app]:
-  #     if (results[int(app)][int(tag)] == None):
-  #       newAppTagsTuple.append((int(app), int(tag)))
-  
-  # Do a reverse check to ensure that there has been no deleted tags
-  
-  # print(len(newAppTagsTuple))
-  
-  # 1. Insert any new tags.
-  # try:
-  #   load_dotenv()
-  #   connection_string = os.getenv('DATABASE_URL_PYTHON')
-  #   conn = psycopg2.connect(connection_string)
-  #   cur = conn.cursor()
-  #   psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps_Tags" (steam_id, tag_id) VALUES (%s, %s)""", newAppTagsTuple)
-  #   conn.commit()
-  #   print("Storing: {appTagsTuple} new Apps_Tags.".format(appTagsTuple=len(newAppTagsTuple)))
-  # except Exception as error:
-  #   print("Failed to store New Apps_tags")
-  #   logging.info("Failed to store New Apps_tags")
-  #   logging.critical(newAppTagsTuple)
-  #   logging.critical(error)
-  #   sys.exit(1)
-  # finally:
-  #   print("\nclosing\n")
-  #   conn.close()
-  
-  # 2. delete any tags that no longer exist
-
 
 #########################################################################################
 #########################################################################################
