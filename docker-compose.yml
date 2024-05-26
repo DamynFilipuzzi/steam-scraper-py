@@ -5,6 +5,12 @@ services:
     volumes:
       - ./appdata:/appdata
 
+  dlc-scraper:
+    build: ./
+    command: python3 ./dlc-scraper.py
+    volumes:
+      - ./appdata:/appdata
+
   tags-creator:
     build: ./
     command: python3 ./tags-creator.py
@@ -18,6 +24,8 @@ services:
       - ./appdata:/appdata
     depends_on:
       apps-scraper:
+        condition: service_completed_successfully
+      dlc-scraper:
         condition: service_completed_successfully
       tags-creator:
         condition: service_completed_successfully
@@ -34,6 +42,11 @@ services:
         condition: service_completed_successfully
       tags-creator:
         condition: service_completed_successfully
+      dlc-scraper:
+        condition: service_completed_successfully
+#
+#
+#
 # TODO UPDATE and Add tags-creator and tags-uploader
 
 # game-tag-creator:

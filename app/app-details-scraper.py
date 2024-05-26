@@ -38,20 +38,20 @@ def getAppsTags():
   
   return oldAppsTagsList
 
-def getNewApps():
+def getNewApps(path):
   # Read data to insert from file
-  file = open('/appdata/apps.json', encoding="utf-8")
+  file = open(path, encoding="utf-8")
   data = json.load(file)
 
   return data
 
-def getOldApps():
+def getOldApps(appType):
   # Get all apps from db
   load_dotenv()
   connection_string = os.getenv('DATABASE_URL_PYTHON')
   conn = psycopg2.connect(connection_string)
   cur = conn.cursor()
-  cur.execute('SELECT * FROM "Apps"')
+  cur.execute('SELECT * FROM "Apps" WHERE "type" = %s', [appType,])
   appsOld = cur.fetchall()
   oldAppsList = dict()
   for app in appsOld:
@@ -72,7 +72,7 @@ def getNewAndUpdatedApps(data, oldAppsList):
 
   return (newApps, updatedApps)
 
-def getDetails(appData):
+def getDetails(appData, oldTags, oldAppsTags):
   if (appData != None):
     # Rate at which each request can be made. 
     rate = 1.5
@@ -201,33 +201,69 @@ def getDetails(appData):
   
   return (appDetails, appTags)
 
+def getGameDetails():
+  # Retrieves all old tags from db
+  oldTags = getTags()
+  # Retrieves all old Apps_tags from db
+  oldAppsTags = getAppsTags()
+  # Retrieves new apps from file
+  data = getNewApps('/appdata/apps.json')
+  # Retrieves old apps from db
+  oldAppsList = getOldApps("game")
+  # Get new and updated apps 
+  (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
+
+  # Retrieve New and updated app details 
+  print("Retrieving Info for ", len(newApps), "NEW GAME Apps")
+  (newAppDetails, newAppsTags) = getDetails(newApps, oldTags, oldAppsTags)
+
+  print("Retrieving Info for ", len(updatedApps), "Updated GAME Apps")
+  (updatedAppDetails, updatedAppsTags) = getDetails(updatedApps, oldTags, oldAppsTags)
+
+  # Write data to files
+  with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newAppsTags.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedAppsTags.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
+
+def getDLCDetails():
+  # Retrieves all old tags from db
+  oldTags = getTags()
+  # Retrieves all old Apps_tags from db
+  oldAppsTags = getAppsTags()
+  # Retrieves new apps from file
+  data = getNewApps('/appdata/dlc.json')
+  # Retrieves old apps from db
+  oldAppsList = getOldApps("dlc")
+  # Get new and updated apps 
+  (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
+
+  # Retrieve New and updated app details 
+  print("Retrieving Info for ", len(newApps), "NEW DLC Apps")
+  (newAppDetails, newAppsTags) = getDetails(newApps, oldTags, oldAppsTags)
+
+  print("Retrieving Info for ", len(updatedApps), "Updated DLC Apps")
+  (updatedAppDetails, updatedAppsTags) = getDetails(updatedApps, oldTags, oldAppsTags)
+
+  # Write data to files
+  with open('/appdata/newDLCAppDetails.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedDLCAppDetails.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newDLCAppsTags.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedDLCAppsTags.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
+
 ###############################################################################################
 ###############################################################################################
+def main():
+  # getGameDetails()
+  getDLCDetails()
 
-# Retrieves all old tags from db
-oldTags = getTags()
-# Retrieves all old Apps_tags from db
-oldAppsTags = getAppsTags()
-# Retrieves new apps from file
-data = getNewApps()
-# Retrieves old apps from db
-oldAppsList = getOldApps()
-# Get new and updated apps 
-(newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
-
-# Retrieve New and updated app details 
-print("Retrieving Info for ", len(newApps), "NEW Apps")
-(newAppDetails, newAppsTags) = getDetails(newApps)
-
-print("Retrieving Info for ", len(updatedApps), "Updated Apps")
-(updatedAppDetails, updatedAppsTags) = getDetails(updatedApps)
-
-# Write data to files
-with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
-  json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-with open('/appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
-  json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
-with open('/appdata/newAppsTags.json', 'w', encoding='utf-8') as f:
-  json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
-with open('/appdata/updatedAppsTags.json', 'w', encoding='utf-8') as f:
-  json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
+if __name__ == '__main__':
+  main()

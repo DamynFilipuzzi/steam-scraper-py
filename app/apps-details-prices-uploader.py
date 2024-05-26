@@ -288,13 +288,7 @@ def storeNewAppsTags(tags):
     print("\nclosing\n")
     conn.close()
 
-#########################################################################################
-#########################################################################################
-#########################################################################################
-
-def main():
-  logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
-
+def storeGameApps():
   # Get all Apps Details
   file = open('/appdata/apps.json', encoding="utf-8")
   apps = json.load(file)
@@ -332,6 +326,55 @@ def main():
   storeUpdatedAppDetails(updatedAppDetailsList)
   storeNewAppsTags(newAppsTags)
   storeNewAppsTags(updatedAppsTags)
+
+def storeDLCApps():
+  # Get all Apps Details
+  file = open('/appdata/dlc.json', encoding="utf-8")
+  apps = json.load(file)
+  # Get New Apps Details
+  file = open('/appdata/newDLCAppDetails.json', encoding="utf-8")
+  newAppDetails = json.load(file)
+  # Get Updated App Details
+  file = open('/appdata/updatedDLCAppDetails.json', encoding="utf-8")
+  updatedAppDetails = json.load(file)
+  # Get New Tags
+  file = open('/appdata/newDLCAppsTags.json', encoding="utf-8")
+  newAppsTags = json.load(file)
+  # Get Updated Tags
+  file = open('/appdata/updatedDLCAppsTags.json', encoding="utf-8")
+  updatedAppsTags = json.load(file)
+
+    # Get App Tuples
+  newAppsList = getApps(apps, newAppDetails, isNew=True)
+  updatedAppsList = getApps(apps, updatedAppDetails, isNew=False)
+
+  # Get App Details Tuples
+  newAppDetailsList = getDetails(newAppDetails, isNew=True)
+  updatedAppDetailsList = getDetails(updatedAppDetails, isNew=False)
+
+  # Get App Price Tuples
+  newAppPriceList = getPrice(newAppDetails, apps=None)
+  updatedAppPriceList = getPrice(updatedAppDetails, apps=apps)
+
+  storeNewApps(newAppsList)
+  storeNewAppDetails(newAppDetailsList)
+  storeNewAppPrices(newAppPriceList)
+  # ***storeUpdatedAppPrices() MUST RUN BEFORE storeUpdatedApps() Otherwise the price_change_number will be altered before validation step***
+  storeUpdatedAppPrices(updatedAppPriceList)
+  storeUpdatedApps(updatedAppsList)
+  storeUpdatedAppDetails(updatedAppDetailsList)
+  storeNewAppsTags(newAppsTags)
+  storeNewAppsTags(updatedAppsTags)
+
+#########################################################################################
+#########################################################################################
+#########################################################################################
+
+def main():
+  logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
+  # storeGameApps()
+  storeDLCApps()
+  
 
 if __name__ == '__main__':
   main()
