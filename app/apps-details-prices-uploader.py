@@ -289,6 +289,7 @@ def storeNewAppsTags(tags):
     conn.close()
 
 def storeGameApps():
+  logging.info("Storing Apps-Games")
   # Get all Apps Details
   file = open('/appdata/apps.json', encoding="utf-8")
   apps = json.load(file)
@@ -328,6 +329,7 @@ def storeGameApps():
   storeNewAppsTags(updatedAppsTags)
 
 def storeDLCApps():
+  logging.info("Storing Apps-DLC")
   # Get all Apps Details
   file = open('/appdata/dlc.json', encoding="utf-8")
   apps = json.load(file)
