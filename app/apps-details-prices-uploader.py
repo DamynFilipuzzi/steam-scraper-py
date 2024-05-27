@@ -372,7 +372,7 @@ def storeDLCApps():
 
 def main():
   logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
-  # storeGameApps()
+  storeGameApps()
   storeDLCApps()
   
 
