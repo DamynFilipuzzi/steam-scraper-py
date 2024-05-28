@@ -20,6 +20,7 @@ The initial scrape will take 40+ hours to complete. This is because the code fol
 
 ## Todo
 
+- [] Restructure file structure (I.e. https://www.reddit.com/r/selfhosted/comments/166l4g7/organize_multiple_docker_compose_files/)
 - [] Find a better docker image.
 - [] Testing :)
 - [] create new container for most most played, and top sellers scraper (Intention is to run this much more frequently in order to use them as filterable options)
