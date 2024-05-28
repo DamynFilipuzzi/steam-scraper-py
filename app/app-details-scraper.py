@@ -45,13 +45,13 @@ def getNewApps(path):
 
   return data
 
-def getOldApps(appType):
+def getOldApps():
   # Get all apps from db
   load_dotenv()
   connection_string = os.getenv('DATABASE_URL_PYTHON')
   conn = psycopg2.connect(connection_string)
   cur = conn.cursor()
-  cur.execute('SELECT * FROM "Apps" WHERE "type" = %s', [appType,])
+  cur.execute('SELECT * FROM "Apps"')
   appsOld = cur.fetchall()
   oldAppsList = dict()
   for app in appsOld:
@@ -209,7 +209,7 @@ def getGameDetails():
   # Retrieves new apps from file
   data = getNewApps('/appdata/apps.json')
   # Retrieves old apps from db
-  oldAppsList = getOldApps("game")
+  oldAppsList = getOldApps()
   # Get new and updated apps 
   (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
 
@@ -238,7 +238,7 @@ def getDLCDetails():
   # Retrieves new apps from file
   data = getNewApps('/appdata/dlc.json')
   # Retrieves old apps from db
-  oldAppsList = getOldApps("dlc")
+  oldAppsList = getOldApps()
   # Get new and updated apps 
   (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
 
