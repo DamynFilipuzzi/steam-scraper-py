@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import sys
+from fp.fp import FreeProxy
 
 def getApps():
     # Get all apps from db
@@ -26,7 +27,7 @@ def getApps():
   
   return apps
 
-def getTop100(URL, updatedAt, topSeller=False):
+def getTop100(URL, updatedAt, proxy, topSeller=False):
   # Run google chrome in headless mode (no browser popup)
   options = Options()
   options.add_argument("start-maximized")
@@ -36,6 +37,7 @@ def getTop100(URL, updatedAt, topSeller=False):
   options.add_argument("--disable-dev-shm-usage")
   options.add_argument("--disable-browser-side-navigation")
   options.add_argument("--disable-gpu")
+  options.add_argument(f'--proxy-server={proxy}')
 
   # Set up the Chrome WebDriver
   driver = webdriver.Chrome(options=options)
@@ -149,21 +151,29 @@ def storeTopSelling(values):
 
 
 def main():
-  updatedAt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-  URL = "https://store.steampowered.com/charts/mostplayed"
-  resultsMostPlayed = getTop100(URL, updatedAt, False)
-  URL = "https://store.steampowered.com/charts/topselling/CA"
-  resultsTopSelling = getTop100(URL, updatedAt, True)
-
-  print('Most Played: ', len(resultsMostPlayed))
-  print('Top Selling: ', len(resultsTopSelling))
-
-  truncateTable("MostPlayed")
-  storeMostPlayed(resultsMostPlayed)
-
-  truncateTable("TopSellers")
-  storeTopSelling(resultsTopSelling)
+  # Get Proxy
+  while True:
+    try:
+      proxy = FreeProxy(https=True).get()
+      print(proxy)
+      updatedAt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      URL = "https://store.steampowered.com/charts/mostplayed"
+      resultsMostPlayed = getTop100(URL, updatedAt, proxy, False)
+      URL = "https://store.steampowered.com/charts/topselling/CA"
+      resultsTopSelling = getTop100(URL, updatedAt, proxy, True)
+      print('Most Played: ', len(resultsMostPlayed))
+      print('Top Selling: ', len(resultsTopSelling))
+      if (len(resultsMostPlayed) != 0 and len(resultsTopSelling) != 0):
+        print("success")
+        truncateTable("MostPlayed")
+        storeMostPlayed(resultsMostPlayed)
+        truncateTable("TopSellers")
+        storeTopSelling(resultsTopSelling)
+        break
+      else:
+        print("fail retrying")
+    except Exception as error:
+      print(error)
 
 if __name__ == '__main__':
   main()
