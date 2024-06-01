@@ -24,9 +24,11 @@ def getOldTags():
 
 # Scrape all apps
 def tagsScraper():
+  load_dotenv()
+  apiKey = os.getenv('STEAM_API_KEY')
   oldTagsList = getOldTags()
 
-  URL = 'https://api.steampowered.com/IStoreService/GetMostPopularTags/v1/?key=B395DF29FCF1147B70EA8EC0FEED516F'
+  URL = 'https://api.steampowered.com/IStoreService/GetMostPopularTags/v1/?key={key}'.format(key=apiKey)
   response = requests.get(URL)
 
   tagsList = dict()
