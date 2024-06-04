@@ -29,11 +29,13 @@ def getApps(apps, appDetails, isNew):
       lastModified = int(apps[steamId]['last_modified'])
       priceChangeNumber = int(apps[steamId]['price_change_number'])
       updatedAt = apps[steamId]['updated_at']
+      totalReviews = int(appDetails[steamId]['TotalReviews']) if appDetails[steamId]['TotalReviews'] else None
+      positiveReviews = int(appDetails[steamId]['PositiveReviews']) if appDetails[steamId]['PositiveReviews'] else None
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
       if (isNew):
-        appTuples.append((steamId, title, type, lastModified, priceChangeNumber, updatedAt))
+        appTuples.append((steamId, title, type, lastModified, priceChangeNumber, updatedAt, totalReviews, positiveReviews))
       else:
-        appTuples.append((title, type, lastModified, priceChangeNumber, updatedAt, steamId))
+        appTuples.append((title, type, lastModified, priceChangeNumber, updatedAt, totalReviews, positiveReviews, steamId))
 
   return appTuples
 
@@ -45,14 +47,12 @@ def getDetails(appDetails, isNew):
       description = str(appDetails[steamId]['Description']) if appDetails[steamId]['Description'] else None
       shortDescription = str(appDetails[steamId]['ShortDesc']) if appDetails[steamId]['ShortDesc'] else None
       isMature = bool(appDetails[steamId]['IsMature']) if appDetails[steamId]['IsMature'] == False or appDetails[steamId]['IsMature'] == True else None
-      totalReviews = int(appDetails[steamId]['TotalReviews']) if appDetails[steamId]['TotalReviews'] else None
-      positiveReviews = int(appDetails[steamId]['PositiveReviews']) if appDetails[steamId]['PositiveReviews'] else None
       updatedAt = appDetails[steamId]['UpdatedAt']
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
       if (isNew):
-        appDetailTuples.append((steamId, description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt))
+        appDetailTuples.append((steamId, description, shortDescription, isMature, updatedAt))
       else:
-        appDetailTuples.append((description, shortDescription, isMature, totalReviews, positiveReviews, updatedAt, steamId))
+        appDetailTuples.append((description, shortDescription, isMature, updatedAt, steamId))
   
   return appDetailTuples
 
@@ -108,7 +108,7 @@ def storeNewApps(newAppsList):
     connection_string = os.getenv('DATABASE_URL_PYTHON')
     conn = psycopg2.connect(connection_string)
     cur = conn.cursor()
-    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps" (steam_id, title, type, last_modified, price_change_number, updated_at) VALUES (%s, %s, %s, %s, %s, %s)""", newAppsList)
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps" (steam_id, title, type, last_modified, price_change_number, updated_at, total_reviews, total_positive_reviews) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", newAppsList)
     conn.commit()
     print("Storing: {lenNewApps} new apps.".format(lenNewApps=len(newAppsList)))
     logging.info("Storing: {lenNewApps} new apps.".format(lenNewApps=len(newAppsList)))
@@ -130,7 +130,7 @@ def storeNewAppDetails(newAppDetailsList):
     connection_string = os.getenv('DATABASE_URL_PYTHON')
     conn = psycopg2.connect(connection_string)
     cur = conn.cursor()
-    psycopg2.extras.execute_batch(cur, """INSERT INTO "App_Info" (steam_id, description, short_description, is_mature, total_reviews, total_positive_reviews, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s)""", newAppDetailsList)
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "App_Info" (steam_id, description, short_description, is_mature, updated_at) VALUES (%s, %s, %s, %s, %s)""", newAppDetailsList)
     conn.commit()
     print("Storing: {lenNewAppDetailsList} new app Details.".format(lenNewAppDetailsList=len(newAppDetailsList)))
     logging.info("Storing: {lenNewAppDetailsList} new app Details.".format(lenNewAppDetailsList=len(newAppDetailsList)))
@@ -175,7 +175,7 @@ def storeUpdatedApps(updatedAppsList):
     connection_string = os.getenv('DATABASE_URL_PYTHON')
     conn = psycopg2.connect(connection_string)
     cur = conn.cursor()
-    psycopg2.extras.execute_batch(cur, """UPDATE "Apps" SET title=%s, type=%s, last_modified=%s, price_change_number=%s, updated_at=%s WHERE steam_id=%s""", updatedAppsList)
+    psycopg2.extras.execute_batch(cur, """UPDATE "Apps" SET title=%s, type=%s, last_modified=%s, price_change_number=%s, updated_at=%s, total_reviews=%s, total_positive_reviews=%s WHERE steam_id=%s""", updatedAppsList)
     conn.commit()
     print("Storing: {lenUpdatedAppsList} updated apps.".format(lenUpdatedAppsList=len(updatedAppsList)))
     logging.info("Storing: {lenUpdatedAppsList} updated apps.".format(lenUpdatedAppsList=len(updatedAppsList)))
@@ -197,7 +197,7 @@ def storeUpdatedAppDetails(updatedAppDetailsList):
     connection_string = os.getenv('DATABASE_URL_PYTHON')
     conn = psycopg2.connect(connection_string)
     cur = conn.cursor()
-    psycopg2.extras.execute_batch(cur, """UPDATE "App_Info" SET description=%s, short_description=%s, is_mature=%s, total_reviews=%s, total_positive_reviews=%s, updated_at=%s WHERE steam_id=%s""", updatedAppDetailsList)
+    psycopg2.extras.execute_batch(cur, """UPDATE "App_Info" SET description=%s, short_description=%s, is_mature=%s, updated_at=%s WHERE steam_id=%s""", updatedAppDetailsList)
     conn.commit()
     print("Storing: {lenUpdatedAppDetailsList} updated app Details.".format(lenUpdatedAppDetailsList=len(updatedAppDetailsList)))
     logging.info("Storing: {lenUpdatedAppDetailsList} updated app Details.".format(lenUpdatedAppDetailsList=len(updatedAppDetailsList)))

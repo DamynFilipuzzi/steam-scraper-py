@@ -55,9 +55,9 @@ def getOldApps():
   appsOld = cur.fetchall()
   oldAppsList = dict()
   for app in appsOld:
-    oldAppsList[app[1]] = ({"id:": app[0], "title": app[2], "type": app[3], "original_price": app[4], "discount_price": app[5], "last_modified": app[6], "price_change_number": app[7], "updated_at": app[8], "created_at": app[9]})
+    oldAppsList[app[1]] = ({"id:": app[0], "title": app[2], "type": app[3], "last_modified": app[4], "price_change_number": app[5], "updated_at": app[6], "created_at": app[7], "total_positive_reviews": app[8], "total_reviews": app[9]})
   cur.close()
-  
+
   return oldAppsList
 
 def getNewAndUpdatedApps(data, oldAppsList):
