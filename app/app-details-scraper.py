@@ -294,7 +294,7 @@ def getDLCDetails():
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
   with open('/appdata/updatedDLCAppsTags.json', 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newAppsScreenshots.json', 'w', encoding='utf-8') as f:
+  with open('/appdata/newDLCScreenshots.json', 'w', encoding='utf-8') as f:
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
   with open('/appdata/updatedDLCScreenshots.json', 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)

@@ -332,6 +332,12 @@ def storeGameApps():
   # Get Updated Tags
   file = open('/appdata/updatedAppsTags.json', encoding="utf-8")
   updatedAppsTags = json.load(file)
+  # Get new Screenshots
+  file = open('/appdata/newAppsScreenshots.json', encoding="utf-8")
+  newAppsScreenshots = json.load(file)
+  # Get updated Screenshots
+  file = open('/appdata/updatedAppsScreenshots.json', encoding="utf-8")
+  updatedAppsScreenshots = json.load(file)
 
   # Get App Tuples
   newAppsList = getApps(apps, newAppDetails, isNew=True)
@@ -354,6 +360,9 @@ def storeGameApps():
   storeUpdatedAppDetails(updatedAppDetailsList)
   storeNewAppsTags(newAppsTags)
   storeNewAppsTags(updatedAppsTags)
+  storeOrUpdateScreenshots(newAppsScreenshots)
+  storeOrUpdateScreenshots(updatedAppsScreenshots)
+  
 
 def storeDLCApps():
   logging.info("Storing Apps-DLC")
@@ -372,6 +381,12 @@ def storeDLCApps():
   # Get Updated Tags
   file = open('/appdata/updatedDLCAppsTags.json', encoding="utf-8")
   updatedAppsTags = json.load(file)
+  # Get new Screenshots
+  file = open('/appdata/newDLCScreenshots.json', encoding="utf-8")
+  newAppsScreenshots = json.load(file)
+  # Get updated Screenshots
+  file = open('/appdata/updatedDLCScreenshots.json', encoding="utf-8")
+  updatedAppsScreenshots = json.load(file)
 
     # Get App Tuples
   newAppsList = getApps(apps, newAppDetails, isNew=True)
@@ -394,6 +409,8 @@ def storeDLCApps():
   storeUpdatedAppDetails(updatedAppDetailsList)
   storeNewAppsTags(newAppsTags)
   storeNewAppsTags(updatedAppsTags)
+  storeOrUpdateScreenshots(newAppsScreenshots)
+  storeOrUpdateScreenshots(updatedAppsScreenshots)
 
 #########################################################################################
 #########################################################################################
@@ -401,13 +418,8 @@ def storeDLCApps():
 
 def main():
   logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
-  # storeGameApps()
-  # storeDLCApps()
-
-  # to remove
-  file = open('/appdata/updatedAppsScreenshots.json', encoding="utf-8")
-  updatedAppsScreenshots = json.load(file)
-  storeNewScreenshots(updatedAppsScreenshots)
+  storeGameApps()
+  storeDLCApps()
   
 
 if __name__ == '__main__':
