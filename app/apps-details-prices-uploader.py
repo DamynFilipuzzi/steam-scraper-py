@@ -287,6 +287,34 @@ def storeNewAppsTags(tags):
     print("\nclosing\n")
     conn.close()
 
+# Store New screenshots
+@timing
+def storeOrUpdateScreenshots(screenshots):
+  appsScreenshotsTuple = []
+  for app in screenshots:
+    for order in screenshots[app]:
+      appsScreenshotsTuple.append((int(app), int(order), screenshots[app][order]['path_thumbnail'], screenshots[app][order]['path_full']))
+
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Screenshots" (steam_id, image_order, path_thumbnail, path_full) VALUES (%s, %s, %s, %s) ON CONFLICT (steam_id, image_order) DO UPDATE SET (steam_id, image_order, path_thumbnail, path_full) = ROW(EXCLUDED.steam_id, EXCLUDED.image_order, EXCLUDED.path_thumbnail, EXCLUDED.path_full)""", appsScreenshotsTuple)
+    conn.commit()
+    print("Storing: {appsScreenshotsTuple} Screenshots.".format(appsScreenshotsTuple=len(appsScreenshotsTuple)))
+    logging.info("Storing: {appsScreenshotsTuple} screenshots.".format(appsScreenshotsTuple=len(appsScreenshotsTuple)))
+  except Exception as error:
+    print("Failed to store screenshots")
+    logging.info("Failed to store screenshots")
+    # logging.critical(appsScreenshotsTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+
 def storeGameApps():
   logging.info("Storing Apps-Games")
   # Get all Apps Details
@@ -373,8 +401,13 @@ def storeDLCApps():
 
 def main():
   logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
-  storeGameApps()
-  storeDLCApps()
+  # storeGameApps()
+  # storeDLCApps()
+
+  # to remove
+  file = open('/appdata/updatedAppsScreenshots.json', encoding="utf-8")
+  updatedAppsScreenshots = json.load(file)
+  storeNewScreenshots(updatedAppsScreenshots)
   
 
 if __name__ == '__main__':

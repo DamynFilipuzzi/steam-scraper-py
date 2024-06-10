@@ -38,6 +38,21 @@ def getAppsTags():
   
   return oldAppsTagsList
 
+def getAppsScreenshots():
+  # Get all apps from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * FROM "Screenshots"')
+  appsScreenshotsOld = cur.fetchall()
+  cur.close()
+  oldAppsScreenshotsList = dict()
+  for screenshot in appsScreenshotsOld:
+    oldAppsScreenshotsList.setdefault(screenshot[1], {})[screenshot[2]] = ({"path_thumbnail": screenshot[3], "path_full": screenshot[4]})
+  
+  return oldAppsScreenshotsList
+
 def getNewApps(path):
   # Read data to insert from file
   file = open(path, encoding="utf-8")
@@ -76,6 +91,8 @@ def getDetails(appData, oldTags, oldAppsTags):
   if (appData != None):
     # Rate at which each request can be made. 
     rate = 1.5
+    oldAppsScreenshots = getAppsScreenshots()
+    appScreenshots = dict()
     appTags = dict()
     appDetails = dict()
     for app in tqdm(appData, desc="Retrieving App Details..."):
@@ -115,7 +132,22 @@ def getDetails(appData, oldTags, oldAppsTags):
                       appTags.setdefault(app, {})[oldTags[tag['description']]['tag_id']] = tag['description']
                   else:
                     appTags.setdefault(app, {})[oldTags[tag['description']]['tag_id']] = tag['description']
-                  
+            
+            # get Screenshots
+            if ("screenshots" in results[str(app)]['data']):
+              for image in results[str(app)]['data']['screenshots']:
+                if (int(app) in oldAppsScreenshots):
+                  if (image['id'] in oldAppsScreenshots[int(app)]):
+                    if (image['path_thumbnail'] not in oldAppsScreenshots[int(app)][image['id']]['path_thumbnail'] or image['path_full'] not in oldAppsScreenshots[int(app)][image['id']]['path_full']):
+                      # either the thumbnail or full_path is different at the current order id. store screenshots
+                      appScreenshots.setdefault(app, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
+                  else:
+                    # id does not exist in old screenshots. store new id screenshots.
+                    appScreenshots.setdefault(app, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
+                else:
+                  # app does not exist in old screenshots. store new apps screenshots.
+                  appScreenshots.setdefault(app, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
+            
             # Query AppReviews
             reviewsUrl = "https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=app)
             reviewsResponse = requests.request("GET", reviewsUrl)
@@ -199,7 +231,7 @@ def getDetails(appData, oldTags, oldAppsTags):
   else:
     appDetails = None
   
-  return (appDetails, appTags)
+  return (appDetails, appTags, appScreenshots)
 
 def getGameDetails():
   # Retrieves all old tags from db
@@ -215,10 +247,10 @@ def getGameDetails():
 
   # Retrieve New and updated app details 
   print("Retrieving Info for ", len(newApps), "NEW GAME Apps")
-  (newAppDetails, newAppsTags) = getDetails(newApps, oldTags, oldAppsTags)
+  (newAppDetails, newAppsTags, newAppsScreenshots) = getDetails(newApps, oldTags, oldAppsTags)
 
   print("Retrieving Info for ", len(updatedApps), "Updated GAME Apps")
-  (updatedAppDetails, updatedAppsTags) = getDetails(updatedApps, oldTags, oldAppsTags)
+  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
   with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
@@ -229,6 +261,10 @@ def getGameDetails():
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
   with open('/appdata/updatedAppsTags.json', 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newAppsScreenshots.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedAppsScreenshots.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
 
 def getDLCDetails():
   # Retrieves all old tags from db
@@ -244,10 +280,10 @@ def getDLCDetails():
 
   # Retrieve New and updated app details 
   print("Retrieving Info for ", len(newApps), "NEW DLC Apps")
-  (newAppDetails, newAppsTags) = getDetails(newApps, oldTags, oldAppsTags)
+  (newAppDetails, newAppsTags, newAppsScreenshots) = getDetails(newApps, oldTags, oldAppsTags)
 
   print("Retrieving Info for ", len(updatedApps), "Updated DLC Apps")
-  (updatedAppDetails, updatedAppsTags) = getDetails(updatedApps, oldTags, oldAppsTags)
+  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
   with open('/appdata/newDLCAppDetails.json', 'w', encoding='utf-8') as f:
@@ -258,6 +294,10 @@ def getDLCDetails():
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
   with open('/appdata/updatedDLCAppsTags.json', 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newAppsScreenshots.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedDLCScreenshots.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
 
 ###############################################################################################
 ###############################################################################################
