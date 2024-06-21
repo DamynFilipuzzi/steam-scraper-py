@@ -70,7 +70,7 @@ def getOldApps():
   appsOld = cur.fetchall()
   oldAppsList = dict()
   for app in appsOld:
-    oldAppsList[app[1]] = ({"id:": app[0], "title": app[2], "type": app[3], "last_modified": app[4], "price_change_number": app[5], "updated_at": app[6], "created_at": app[7], "total_positive_reviews": app[8], "total_reviews": app[9]})
+    oldAppsList[app[1]] = ({"id:": app[0], "title": app[2], "type": app[3], "last_modified": app[4], "price_change_number": app[5], "updated_at": app[6], "created_at": app[7], "total_positive_reviews": app[8], "total_reviews": app[9], "dlc_steam_id": app[10]})
   cur.close()
 
   return oldAppsList
@@ -108,6 +108,11 @@ def getDetails(appData, oldTags, oldAppsTags):
             # Get info in data
             hasDetails = True
             type = results[str(app)]['data']['type'] if results[str(app)]['data']['type'] != None else None
+            # If app is dlc get the parent app id
+            if (str(type) == 'dlc'):
+              dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
+            else:
+              dlcSteamId = None
             isFree = results[str(app)]['data']['is_free'] if results[str(app)]['data']['is_free'] != None else None
             desc = results[str(app)]['data']['about_the_game'] if results[str(app)]['data']['about_the_game'] != None else None
             shortDesc = results[str(app)]['data']['short_description'] if results[str(app)]['data']['short_description'] != None else None
@@ -189,6 +194,7 @@ def getDetails(appData, oldTags, oldAppsTags):
             discountPrice = None
             positiveReviews = None
             totalReviews = None
+            dlcSteamId = None
             print('\r')
             print("App Data is empty for: ", app)
         else:
@@ -203,6 +209,7 @@ def getDetails(appData, oldTags, oldAppsTags):
           discountPrice = None
           positiveReviews = None
           totalReviews = None
+          dlcSteamId = None
           print('\r')
           print("App has no details for: ", app)
       else:
@@ -217,6 +224,7 @@ def getDetails(appData, oldTags, oldAppsTags):
         discountPrice = None
         positiveReviews = None
         totalReviews = None
+        dlcSteamId = None
         print('\r')
         print('Something Went wrong for: ', app)
 
@@ -226,7 +234,7 @@ def getDetails(appData, oldTags, oldAppsTags):
       if (delay > 0):
         time.sleep(delay)
 
-      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "UpdatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "DlcSteamId": dlcSteamId, "UpdatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
   else:
     appDetails = None

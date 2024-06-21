@@ -26,6 +26,7 @@ def getApps(apps, appDetails, isNew):
     if (appDetails[steamId]['HasDetails']):
       title = str(apps[steamId]['title'])
       type = str(appDetails[steamId]['Type'])
+      dlcSteamId = int(appDetails[steamId]['DlcSteamId']) if appDetails[steamId]['DlcSteamId'] else None
       lastModified = int(apps[steamId]['last_modified'])
       priceChangeNumber = int(apps[steamId]['price_change_number'])
       updatedAt = apps[steamId]['updated_at']
@@ -33,9 +34,9 @@ def getApps(apps, appDetails, isNew):
       positiveReviews = int(appDetails[steamId]['PositiveReviews']) if appDetails[steamId]['PositiveReviews'] else None
       # Due to the way query statement is written for updating records steam_id is stored as the last item in the tuple
       if (isNew):
-        appTuples.append((steamId, title, type, lastModified, priceChangeNumber, updatedAt, totalReviews, positiveReviews))
+        appTuples.append((steamId, title, type, lastModified, priceChangeNumber, updatedAt, totalReviews, positiveReviews, dlcSteamId))
       else:
-        appTuples.append((title, type, lastModified, priceChangeNumber, updatedAt, totalReviews, positiveReviews, steamId))
+        appTuples.append((title, type, lastModified, priceChangeNumber, updatedAt, totalReviews, positiveReviews, dlcSteamId, steamId))
 
   return appTuples
 
@@ -86,7 +87,8 @@ def getPrice(appDetails, apps=None):
 
     results = cur.fetchall()
     cur.close()
-
+    
+    # TODO: FIX THIS IF STATEMENT. CURRENTLY NOT WORKING AS INTENDED. (PROOF AT: SELECT * FROM public."Prices" WHERE "steam_id"=2778580 ORDER BY id ASC )
     # Store the updated prices in the App Price Tuple
     for app in results:
       if (app[5] != apps[str(app[1])]['price_change_number'] and (app[15] != appDetails[steamId]['DiscountPrice'] or app[14] != appDetails[steamId]['OriginalPrice'])):
@@ -108,7 +110,7 @@ def storeNewApps(newAppsList):
     connection_string = os.getenv('DATABASE_URL_PYTHON')
     conn = psycopg2.connect(connection_string)
     cur = conn.cursor()
-    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps" (steam_id, title, type, last_modified, price_change_number, updated_at, total_reviews, total_positive_reviews) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", newAppsList)
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps" (steam_id, title, type, last_modified, price_change_number, updated_at, total_reviews, total_positive_reviews, dlc_steam_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", newAppsList)
     conn.commit()
     print("Storing: {lenNewApps} new apps.".format(lenNewApps=len(newAppsList)))
     logging.info("Storing: {lenNewApps} new apps.".format(lenNewApps=len(newAppsList)))
@@ -175,7 +177,7 @@ def storeUpdatedApps(updatedAppsList):
     connection_string = os.getenv('DATABASE_URL_PYTHON')
     conn = psycopg2.connect(connection_string)
     cur = conn.cursor()
-    psycopg2.extras.execute_batch(cur, """UPDATE "Apps" SET title=%s, type=%s, last_modified=%s, price_change_number=%s, updated_at=%s, total_reviews=%s, total_positive_reviews=%s WHERE steam_id=%s""", updatedAppsList)
+    psycopg2.extras.execute_batch(cur, """UPDATE "Apps" SET title=%s, type=%s, last_modified=%s, price_change_number=%s, updated_at=%s, total_reviews=%s, total_positive_reviews=%s, dlc_steam_id=%s WHERE steam_id=%s""", updatedAppsList)
     conn.commit()
     print("Storing: {lenUpdatedAppsList} updated apps.".format(lenUpdatedAppsList=len(updatedAppsList)))
     logging.info("Storing: {lenUpdatedAppsList} updated apps.".format(lenUpdatedAppsList=len(updatedAppsList)))
