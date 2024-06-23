@@ -109,7 +109,7 @@ def getDetails(appData, oldTags, oldAppsTags):
             hasDetails = True
             type = results[str(app)]['data']['type'] if results[str(app)]['data']['type'] != None else None
             # If app is dlc get the parent app id
-            if (str(type) == 'dlc'):
+            if (str(type) == 'dlc' and 'fullgame' in results[str(app)]['data']):
               dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
             else:
               dlcSteamId = None
