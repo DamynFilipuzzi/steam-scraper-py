@@ -109,23 +109,29 @@ def getDetails(appData, oldTags, oldAppsTags):
             # Get info in data
             hasDetails = True
             type = results[str(app)]['data']['type'] if results[str(app)]['data']['type'] != None else None
+
             # If app is dlc get the parent app id and if app is in database
             if (str(type) == 'dlc'):
-              if ('fullgame' in results[str(app)]['data'] and int(app) in oldApps):
-                dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
+              if ('fullgame' in results[str(app)]['data']):
+                parentApp = int(results[str(app)]['data']['fullgame']['appid'])
+                if (parentApp in oldApps):
+                  dlcSteamId = parentApp
+                else:
+                  # check new apps for parent app
+                  file = open('/appdata/newAppDetails.json', encoding="utf-8")
+                  newAppDetails = json.load(file)
+                  if (parentApp in newAppDetails):
+                    if (newAppDetails[parentApp]['HasDetails'] == True):
+                      dlcSteamId = parentApp
+                    else:
+                      dlcSteamId = None
+                  else:
+                    dlcSteamId = None
               else:
                 dlcSteamId = None
             else:
-              # Get New Apps Details
-              file = open('/appdata/newAppDetails.json', encoding="utf-8")
-              newAppDetails = json.load(file)
-              if (app in newAppDetails):
-                if (newAppDetails[app]['HasDetails'] == True):
-                  dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
-                else:
-                  dlcSteamId = None
-              else:
-                dlcSteamId = None
+              dlcSteamId = None
+
             isFree = results[str(app)]['data']['is_free'] if results[str(app)]['data']['is_free'] != None else None
             desc = results[str(app)]['data']['about_the_game'] if results[str(app)]['data']['about_the_game'] != None else None
             shortDesc = results[str(app)]['data']['short_description'] if results[str(app)]['data']['short_description'] != None else None
