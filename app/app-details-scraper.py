@@ -110,8 +110,11 @@ def getDetails(appData, oldTags, oldAppsTags):
             hasDetails = True
             type = results[str(app)]['data']['type'] if results[str(app)]['data']['type'] != None else None
             # If app is dlc get the parent app id and if app is in database
-            if (str(type) == 'dlc' and 'fullgame' in results[str(app)]['data'] and int(app) in oldApps):
-              dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
+            if (str(type) == 'dlc'):
+              if ('fullgame' in results[str(app)]['data'] and int(app) in oldApps):
+                dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
+              else:
+                dlcSteamId = None
             else:
               # Get New Apps Details
               file = open('/appdata/newAppDetails.json', encoding="utf-8")
