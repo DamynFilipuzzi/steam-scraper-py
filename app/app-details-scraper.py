@@ -92,6 +92,7 @@ def getDetails(appData, oldTags, oldAppsTags):
     # Rate at which each request can be made. 
     rate = 1.5
     oldAppsScreenshots = getAppsScreenshots()
+    oldApps = getOldApps()
     appScreenshots = dict()
     appTags = dict()
     appDetails = dict()
@@ -108,11 +109,20 @@ def getDetails(appData, oldTags, oldAppsTags):
             # Get info in data
             hasDetails = True
             type = results[str(app)]['data']['type'] if results[str(app)]['data']['type'] != None else None
-            # If app is dlc get the parent app id
-            if (str(type) == 'dlc' and 'fullgame' in results[str(app)]['data']):
+            # If app is dlc get the parent app id and if app is in database
+            if (str(type) == 'dlc' and 'fullgame' in results[str(app)]['data'] and int(app) in oldApps):
               dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
             else:
-              dlcSteamId = None
+              # Get New Apps Details
+              file = open('/appdata/newAppDetails.json', encoding="utf-8")
+              newAppDetails = json.load(file)
+              if (app in newAppDetails):
+                if (newAppDetails[app]['HasDetails'] == True):
+                  dlcSteamId = int(results[str(app)]['data']['fullgame']['appid'])
+                else:
+                  dlcSteamId = None
+              else:
+                dlcSteamId = None
             isFree = results[str(app)]['data']['is_free'] if results[str(app)]['data']['is_free'] != None else None
             desc = results[str(app)]['data']['about_the_game'] if results[str(app)]['data']['about_the_game'] != None else None
             shortDesc = results[str(app)]['data']['short_description'] if results[str(app)]['data']['short_description'] != None else None
