@@ -151,6 +151,7 @@ def storeTopSelling(values):
 
 
 def main():
+  counter = 0
   # Get Proxy
   while True:
     try:
@@ -174,6 +175,10 @@ def main():
         print("fail retrying")
     except Exception as error:
       print(error)
+
+    counter += 1
+    if (counter == 10):
+      break
 
 if __name__ == '__main__':
   main()
