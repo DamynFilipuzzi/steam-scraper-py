@@ -15,13 +15,5 @@
 
 <p style="font-size: 14px;"> 
 <span style="font-weight: bold;">Note:</span> 
-The initial scrape will take 40+ hours to complete. This is because the code follows the rate limit set by Valve Inc. After which, it typically completes a scrape in just under an hour. 
+The initial scrape will take 40+ hours to complete. This is because the code follows the rate limit set by Valve Inc. After which, it typically completes a scrape in just under an hour.
 </p>
-
-## Todo
-
-- [] Restructure file structure (I.e. https://www.reddit.com/r/selfhosted/comments/166l4g7/organize_multiple_docker_compose_files/)
-- [] Find a better docker image.
-- [] Testing :)
-- [] create new container for most most played, and top sellers scraper (Intention is to run this much more frequently in order to use them as filterable options)
-- [] Create another separate docker container to revalidate app_info if updated_at is greater than 6 months for example (Check if still exists and data is still accurate)
