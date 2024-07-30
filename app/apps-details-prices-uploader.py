@@ -42,6 +42,7 @@ def getApps(apps, appDetails, isNew):
 
 def getDetails(appDetails, isNew):
   appDetailTuples = []
+  appReleaseDateTuple = []
   for steamId in appDetails:
     # Only Store apps that have details
     if (appDetails[steamId]['HasDetails']):
@@ -54,8 +55,13 @@ def getDetails(appDetails, isNew):
         appDetailTuples.append((steamId, description, shortDescription, isMature, updatedAt))
       else:
         appDetailTuples.append((description, shortDescription, isMature, updatedAt, steamId))
+      
+      # Store data for release date table.
+      comingSoon = bool(appDetails[steamId]["Coming_Soon"]) if appDetails[steamId]["Coming_Soon"] == False or appDetails[steamId]["Coming_Soon"] == True else None
+      releaseDate = str(appDetails[steamId]["ReleaseDate"]) if appDetails[steamId]["ReleaseDate"] else None
+      appReleaseDateTuple.append((steamId, comingSoon, releaseDate))
   
-  return appDetailTuples
+  return (appDetailTuples, appReleaseDateTuple)
 
 def getPrice(appDetails, apps=None):
   appPriceTuples = []
@@ -167,7 +173,6 @@ def storeNewAppPrices(newAppPriceList):
   finally:
     print("\nclosing\n")
     conn.close()
-
 
 # Store Updated Apps
 @timing
@@ -316,6 +321,212 @@ def storeOrUpdateScreenshots(screenshots):
     print("\nclosing\n")
     conn.close()
 
+# Store New or Updated Videos
+@timing
+def storeOrUpdateVideos(videos):
+  appsVideosTuple = []
+  for app in videos:
+    for id in videos[app]:
+      appsVideosTuple.append((int(app), int(id), videos[app][id]['video_name']))
+
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Videos" (steam_id, video_id, video_name) VALUES (%s, %s, %s) ON CONFLICT (video_id) DO UPDATE SET (steam_id, video_id, video_name) = ROW(EXCLUDED.steam_id, EXCLUDED.video_id, EXCLUDED.video_name)""", appsVideosTuple)
+    conn.commit()
+    print("Storing: {appsVideosTuple} Videos.".format(appsVideosTuple=len(appsVideosTuple)))
+    logging.info("Storing: {appsVideosTuple} Videos.".format(appsVideosTuple=len(appsVideosTuple)))
+  except Exception as error:
+    print("Failed to store Videos")
+    logging.info("Failed to store Videos")
+    logging.critical(appsVideosTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+# Store or update Release Date
+@timing
+def storeOrUpdateReleaseDate(appsReleaseDatesTuple):
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "ReleaseDate" (steam_id, coming_soon, release_date) VALUES (%s, %s, %s) ON CONFLICT (steam_id) DO UPDATE SET (steam_id, coming_soon, release_date) = ROW(EXCLUDED.steam_id, EXCLUDED.coming_soon, EXCLUDED.release_date)""", appsReleaseDatesTuple)
+    conn.commit()
+    print("Storing: {appsReleaseDatesTuple} AppsReleaseDates.".format(appsReleaseDatesTuple=len(appsReleaseDatesTuple)))
+    logging.info("Storing: {appsReleaseDatesTuple} AppsReleaseDates.".format(appsReleaseDatesTuple=len(appsReleaseDatesTuple)))
+  except Exception as error:
+    print("Failed to store AppsReleaseDates")
+    logging.info("Failed to store AppsReleaseDates")
+    logging.critical(appsReleaseDatesTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+def getOldDevelopers():
+  # Get all Developers from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * From "Developers"')
+  devsOld = cur.fetchall()
+  oldDevsList = dict()
+  for devs in devsOld:
+    oldDevsList[devs[1]] = devs[0]
+  
+  return oldDevsList
+
+# Store New Developers
+@timing
+def storeNewDevelopers(developersList):
+  developersTuple = []
+  for dev in developersList:
+    developersTuple.append((dev,))
+  
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Developers" (developer_name) VALUES (%s)""", developersTuple)
+    conn.commit()
+    print("Storing: {developersTuple} Developers.".format(developersTuple=len(developersTuple)))
+    logging.info("Storing: {developersTuple} Developers.".format(developersTuple=len(developersTuple)))
+  except Exception as error:
+    print("Failed to store Developers")
+    logging.info("Failed to store Developers")
+    logging.critical(developersTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+# Store Apps_Developers and Developers if Developer does not exist in DB.
+@timing
+def storeAppsDevelopers(newAppsDevelopers):
+  oldDevs = getOldDevelopers()
+  devsToStore = list()
+  # Get Developers Not currently in DB
+  for app in newAppsDevelopers:
+    for dev in newAppsDevelopers[app]:
+      if (dev not in oldDevs and dev not in devsToStore):
+        devsToStore.append(dev)
+  # Store new Developers
+  storeNewDevelopers(devsToStore)
+  # Get updated data for Developers (Id's for recently created Developers).
+  oldDevs = getOldDevelopers()
+  appsDevelopersTuple = []
+  for app in newAppsDevelopers:
+    for dev in newAppsDevelopers[app]:
+      if (dev in oldDevs):
+        appsDevelopersTuple.append((int(oldDevs[dev]), int(app)))
+  # Store Apps_Developers
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps_Developers" (developer_id, steam_id) VALUES (%s, %s)""", appsDevelopersTuple)
+    conn.commit()
+    print("Storing: {appsDevelopersTuple} Apps_Developers.".format(appsDevelopersTuple=len(appsDevelopersTuple)))
+    logging.info("Storing: {appsDevelopersTuple} Apps_Developers.".format(appsDevelopersTuple=len(appsDevelopersTuple)))
+  except Exception as error:
+    print("Failed to store Apps_Developers")
+    logging.info("Failed to store Apps_Developers")
+    logging.critical(appsDevelopersTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+def getOldPublishers():
+  # Get all Publishers from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * From "Publishers"')
+  pubsOld = cur.fetchall()
+  oldPubsList = dict()
+  for pubs in pubsOld:
+    oldPubsList[pubs[1]] = pubs[0]
+  
+  return oldPubsList
+
+# Store New Publisher
+@timing
+def storeNewPublishers(publishersList):
+  publishersTuple = []
+  for pub in publishersList:
+    publishersTuple.append((pub,))
+  
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Publishers" (publisher_name) VALUES (%s)""", publishersTuple)
+    conn.commit()
+    print("Storing: {publishersTuple} Publishers.".format(publishersTuple=len(publishersTuple)))
+    logging.info("Storing: {publishersTuple} Publishers.".format(publishersTuple=len(publishersTuple)))
+  except Exception as error:
+    print("Failed to store Publishers")
+    logging.info("Failed to store Publishers")
+    logging.critical(publishersTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
+
+# Store Apps_Publishers and Publishers if Publishers does not exist in DB.
+@timing
+def storeAppsPublishers(newAppsPublishers):
+  oldPubs = getOldPublishers()
+  pubsToStore = list()
+  # Get Publishers Not currently in DB
+  for app in newAppsPublishers:
+    for pub in newAppsPublishers[app]:
+      if (pub not in oldPubs and pub not in pubsToStore):
+        pubsToStore.append(pub)
+  # Store new Publishers
+  storeNewPublishers(pubsToStore)
+  # Get updated data for Publishers (Id's for recently created Publishers).
+  oldPubs = getOldPublishers()
+  appsPublishersTuple = []
+  for app in newAppsPublishers:
+    for pub in newAppsPublishers[app]:
+      if (pub in oldPubs):
+        appsPublishersTuple.append((int(oldPubs[pub]), int(app)))
+  # Store Apps_Publishers
+  try:
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    psycopg2.extras.execute_batch(cur, """INSERT INTO "Apps_Publishers" (publisher_id, steam_id) VALUES (%s, %s)""", appsPublishersTuple)
+    conn.commit()
+    print("Storing: {appsPublishersTuple} Apps_Publishers.".format(appsPublishersTuple=len(appsPublishersTuple)))
+    logging.info("Storing: {appsPublishersTuple} Apps_Publishers.".format(appsPublishersTuple=len(appsPublishersTuple)))
+  except Exception as error:
+    print("Failed to store Apps_Publishers")
+    logging.info("Failed to store Apps_Publishers")
+    logging.critical(appsPublishersTuple)
+    logging.critical(error)
+    sys.exit(1)
+  finally:
+    print("\nclosing\n")
+    conn.close()
 
 def storeGameApps():
   logging.info("Storing Apps-Games")
@@ -340,14 +551,32 @@ def storeGameApps():
   # Get updated Screenshots
   file = open('/appdata/updatedAppsScreenshots.json', encoding="utf-8")
   updatedAppsScreenshots = json.load(file)
+  # Get new Videos
+  file = open('/appdata/newAppsVideos.json', encoding="utf-8")
+  newAppsVideos = json.load(file)
+  # Get updated Videos
+  file = open('/appdata/updatedAppsVideos.json', encoding="utf-8")
+  updatedAppsVideos = json.load(file)
+  # Get new App Developers
+  file = open('/appdata/newAppDevelopers.json', encoding="utf-8")
+  newAppsDevelopers = json.load(file)
+  # Get Updated App Developers
+  file = open('/appdata/updatedAppDevelopers.json', encoding="utf-8")
+  updatedAppsDevelopers = json.load(file)
+  # Get new App Publishers
+  file = open('/appdata/newAppPublishers.json', encoding="utf-8")
+  newAppsPublishers = json.load(file)
+  # Get Updated App Publishers
+  file = open('/appdata/updatedAppPublishers.json', encoding="utf-8")
+  updatedAppsPublishers = json.load(file)
 
   # Get App Tuples
   newAppsList = getApps(apps, newAppDetails, isNew=True)
   updatedAppsList = getApps(apps, updatedAppDetails, isNew=False)
 
   # Get App Details Tuples
-  newAppDetailsList = getDetails(newAppDetails, isNew=True)
-  updatedAppDetailsList = getDetails(updatedAppDetails, isNew=False)
+  newAppDetailsList, newAppReleaseDateList = getDetails(newAppDetails, isNew=True)
+  updatedAppDetailsList, updatedAppReleaseDateList = getDetails(updatedAppDetails, isNew=False)
 
   # Get App Price Tuples
   newAppPriceList = getPrice(newAppDetails, apps=None)
@@ -364,7 +593,14 @@ def storeGameApps():
   storeNewAppsTags(updatedAppsTags)
   storeOrUpdateScreenshots(newAppsScreenshots)
   storeOrUpdateScreenshots(updatedAppsScreenshots)
-  
+  storeOrUpdateVideos(newAppsVideos)
+  storeOrUpdateVideos(updatedAppsVideos)
+  storeOrUpdateReleaseDate(newAppReleaseDateList)
+  storeOrUpdateReleaseDate(updatedAppReleaseDateList)
+  storeAppsDevelopers(newAppsDevelopers)
+  storeAppsDevelopers(updatedAppsDevelopers)
+  storeAppsPublishers(newAppsPublishers)
+  storeAppsPublishers(updatedAppsPublishers)
 
 def storeDLCApps():
   logging.info("Storing Apps-DLC")
@@ -389,14 +625,32 @@ def storeDLCApps():
   # Get updated Screenshots
   file = open('/appdata/updatedDLCScreenshots.json', encoding="utf-8")
   updatedAppsScreenshots = json.load(file)
+  # Get new Videos
+  file = open('/appdata/newDLCVideos.json', encoding="utf-8")
+  newAppsVideos = json.load(file)
+  # Get updated Videos
+  file = open('/appdata/updatedDLCVideos.json', encoding="utf-8")
+  updatedAppsVideos = json.load(file)
+  # Get new App Developers
+  file = open('/appdata/newDLCDevelopers.json', encoding="utf-8")
+  newAppsDevelopers = json.load(file)
+  # Get Updated App Developers
+  file = open('/appdata/updatedDLCDevelopers.json', encoding="utf-8")
+  updatedAppsDevelopers = json.load(file)
+  # Get new App Publishers
+  file = open('/appdata/newDLCPublishers.json', encoding="utf-8")
+  newAppsPublishers = json.load(file)
+  # Get Updated App Publishers
+  file = open('/appdata/updatedDLCPublishers.json', encoding="utf-8")
+  updatedAppsPublishers = json.load(file)
 
     # Get App Tuples
   newAppsList = getApps(apps, newAppDetails, isNew=True)
   updatedAppsList = getApps(apps, updatedAppDetails, isNew=False)
 
   # Get App Details Tuples
-  newAppDetailsList = getDetails(newAppDetails, isNew=True)
-  updatedAppDetailsList = getDetails(updatedAppDetails, isNew=False)
+  newAppDetailsList, newAppReleaseDateList = getDetails(newAppDetails, isNew=True)
+  updatedAppDetailsList, updatedAppReleaseDateList = getDetails(updatedAppDetails, isNew=False)
 
   # Get App Price Tuples
   newAppPriceList = getPrice(newAppDetails, apps=None)
@@ -413,6 +667,14 @@ def storeDLCApps():
   storeNewAppsTags(updatedAppsTags)
   storeOrUpdateScreenshots(newAppsScreenshots)
   storeOrUpdateScreenshots(updatedAppsScreenshots)
+  storeOrUpdateVideos(newAppsVideos)
+  storeOrUpdateVideos(updatedAppsVideos)
+  storeOrUpdateReleaseDate(newAppReleaseDateList)
+  storeOrUpdateReleaseDate(updatedAppReleaseDateList)
+  storeAppsDevelopers(newAppsDevelopers)
+  storeAppsDevelopers(updatedAppsDevelopers)
+  storeAppsPublishers(newAppsPublishers)
+  storeAppsPublishers(updatedAppsPublishers)
 
 #########################################################################################
 #########################################################################################

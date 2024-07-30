@@ -8,6 +8,9 @@ from tqdm import tqdm
 import time
 from datetime import datetime
 
+# Rate at which each request can be made. 
+RATE = 1.5
+
 def getTags():
   # Get all apps from db
   load_dotenv()
@@ -53,6 +56,21 @@ def getAppsScreenshots():
   
   return oldAppsScreenshotsList
 
+def getAppsVideos():
+  # Get all apps from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * FROM "Videos"')
+  appsVideosOld = cur.fetchall()
+  cur.close()
+  oldAppsVideosList = dict()
+  for video in appsVideosOld:
+    oldAppsVideosList.setdefault(video[1], {})[video[2]] = ({"video_name": video[3]})
+  
+  return oldAppsVideosList
+
 def getNewApps(path):
   # Read data to insert from file
   file = open(path, encoding="utf-8")
@@ -87,15 +105,55 @@ def getNewAndUpdatedApps(data, oldAppsList):
 
   return (newApps, updatedApps)
 
+def getOldDevelopers():
+  # Get all Developers from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute("""SELECT "Developers".id, "Apps_Developers".steam_id, "Developers".developer_name FROM public."Developers" LEFT JOIN public."Apps_Developers" ON "Developers".id = "Apps_Developers".developer_id""")
+  devsOld = cur.fetchall()
+  oldDevsList = dict()
+  for app in devsOld:
+    # oldDevsList[app[1]] = ({"developer_id": app[0], "developer_name": app[2]})
+    oldDevsList.setdefault(app[1], {})[app[2]] = ({"developer_id": app[0]})
+  cur.close()
+
+  return oldDevsList
+
+def getOldPublishers():
+  # Get all Publishers from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute("""SELECT "Publishers".id, "Apps_Publishers".steam_id, "Publishers".Publisher_name FROM public."Publishers" LEFT JOIN public."Apps_Publishers" ON "Publishers".id = "Apps_Publishers".Publisher_id""")
+  pubsOld = cur.fetchall()
+  oldPubsList = dict()
+  for app in pubsOld:
+    # oldPubsList[app[1]] = ({"Publisher_id": app[0], "Publisher_name": app[2]})
+    oldPubsList.setdefault(app[1], {})[app[2]] = ({"publisher_id": app[0]})
+  cur.close()
+
+  return oldPubsList
+
 def getDetails(appData, oldTags, oldAppsTags):
   if (appData != None):
-    # Rate at which each request can be made. 
-    rate = 1.5
+    # Get old data for comparison.
     oldAppsScreenshots = getAppsScreenshots()
     oldApps = getOldApps()
+    oldAppsVideos = getAppsVideos()
+    oldAppsDevelopers = getOldDevelopers()
+    oldAppsPublishers = getOldPublishers()
+
+    # TODO: Condense these into one.
     appScreenshots = dict()
+    appVideos = dict()
     appTags = dict()
     appDetails = dict()
+    appDevelopers = dict()
+    appPublishers = dict()
+
     for app in tqdm(appData, desc="Retrieving App Details..."):
       start = time.time()
       url = "https://store.steampowered.com/api/appdetails?appids={app}&cc=CA".format(app=app)
@@ -172,6 +230,61 @@ def getDetails(appData, oldTags, oldAppsTags):
                   # app does not exist in old screenshots. store new apps screenshots.
                   appScreenshots.setdefault(app, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
             
+            # Get Videos
+            if ("movies" in results[str(app)]['data']):
+              for video in results[str(app)]['data']['movies']:
+                if (int(app) in oldAppsVideos):
+                  if (video['id'] not in oldAppsVideos[int(app)]):
+                    # id does not exist in old videos. store new id videos.
+                    appVideos.setdefault(app, {})[video['id']] = ({"video_name": video['name']})
+                else:
+                  # app does not exist in old videos. store new apps videos.
+                  appVideos.setdefault(app, {})[video['id']] = ({"video_name": video['name']})
+            
+            # Get ReleaseDate 
+            if ("release_date" in results[str(app)]['data']):
+              if ("coming_soon" in results[str(app)]["data"]["release_date"]):
+                comingSoon = bool(results[str(app)]["data"]["release_date"]["coming_soon"])
+              else:
+                comingSoon = None
+              if ("date" in results[str(app)]["data"]["release_date"]):
+                releaseDate = str(results[str(app)]["data"]["release_date"]["date"])
+              else:
+                releaseDate = None
+            else:
+              comingSoon = None
+              releaseDate = None
+            
+            # Get Developers
+            devs = []
+            if ("developers" in results[str(app)]['data']):
+              for developer in results[str(app)]['data']["developers"]:
+                if (int(app) in oldAppsDevelopers):
+                  if (developer not in str(oldAppsDevelopers[int(app)])):
+                    # Developer does not exist for app. Add to devs array.
+                    devs.append(developer)
+                else:
+                  # App doesn't exist in db so store the developer
+                  devs.append(developer)
+            # Store Results
+            if (len(devs) > 0):
+              appDevelopers[app] = devs
+
+            # Get Publishers
+            pubs = []
+            if ("publishers" in results[str(app)]['data']):
+              for publisher in results[str(app)]['data']["publishers"]:
+                if (int(app) in oldAppsPublishers):
+                  if (publisher not in str(oldAppsPublishers[int(app)])):
+                    # Publisher does not exist for app. Add to pubs array.
+                    pubs.append(publisher)
+                else:
+                  # App doesn't exist in db so store the publisher
+                  pubs.append(publisher)
+            # Store Results
+            if (len(pubs) > 0):
+              appPublishers[app] = pubs
+
             # Query AppReviews
             reviewsUrl = "https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=app)
             reviewsResponse = requests.request("GET", reviewsUrl)
@@ -205,6 +318,8 @@ def getDetails(appData, oldTags, oldAppsTags):
             hasDetails = False
             type = None
             isFree = None
+            comingSoon = None
+            releaseDate = None
             desc = None
             shortDesc = None
             isMature = None
@@ -220,6 +335,8 @@ def getDetails(appData, oldTags, oldAppsTags):
           hasDetails = False
           type = None
           isFree = None
+          comingSoon = None
+          releaseDate = None
           desc = None
           shortDesc = None
           isMature = None
@@ -235,6 +352,8 @@ def getDetails(appData, oldTags, oldAppsTags):
         hasDetails = False
         type = None
         isFree = None
+        comingSoon = None
+        releaseDate = None
         desc = None
         shortDesc = None
         isMature = None
@@ -249,16 +368,16 @@ def getDetails(appData, oldTags, oldAppsTags):
 
       # Ensure that each request does not exceed the defined rate
       totalTime = time.time() - start
-      delay = rate - totalTime
+      delay = RATE - totalTime
       if (delay > 0):
         time.sleep(delay)
 
-      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "DlcSteamId": dlcSteamId, "UpdatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+      appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Coming_Soon": comingSoon, "ReleaseDate": releaseDate, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "DlcSteamId": dlcSteamId, "UpdatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
   else:
     appDetails = None
   
-  return (appDetails, appTags, appScreenshots)
+  return (appDetails, appTags, appScreenshots, appVideos, appDevelopers, appPublishers)
 
 def getGameDetails():
   # Retrieves all old tags from db
@@ -274,10 +393,10 @@ def getGameDetails():
 
   # Retrieve New and updated app details 
   print("Retrieving Info for ", len(newApps), "NEW GAME Apps")
-  (newAppDetails, newAppsTags, newAppsScreenshots) = getDetails(newApps, oldTags, oldAppsTags)
+  (newAppDetails, newAppsTags, newAppsScreenshots, newAppsVideos, newAppDevelopers, newAppPublishers) = getDetails(newApps, oldTags, oldAppsTags)
 
   print("Retrieving Info for ", len(updatedApps), "Updated GAME Apps")
-  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots) = getDetails(updatedApps, oldTags, oldAppsTags)
+  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots, updatedAppsVideos, updatedAppDevelopers, updatedAppPublishers) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
   with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
@@ -292,6 +411,18 @@ def getGameDetails():
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
   with open('/appdata/updatedAppsScreenshots.json', 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newAppsVideos.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppsVideos, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedAppsVideos.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppsVideos, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newAppDevelopers.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppDevelopers, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedAppDevelopers.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppDevelopers, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newAppPublishers.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppPublishers, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedAppPublishers.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppPublishers, f, ensure_ascii=False, indent=4)
 
 def getDLCDetails():
   # Retrieves all old tags from db
@@ -307,10 +438,10 @@ def getDLCDetails():
 
   # Retrieve New and updated app details 
   print("Retrieving Info for ", len(newApps), "NEW DLC Apps")
-  (newAppDetails, newAppsTags, newAppsScreenshots) = getDetails(newApps, oldTags, oldAppsTags)
+  (newAppDetails, newAppsTags, newAppsScreenshots, newAppsVideos, newAppDevelopers, newAppPublishers) = getDetails(newApps, oldTags, oldAppsTags)
 
   print("Retrieving Info for ", len(updatedApps), "Updated DLC Apps")
-  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots) = getDetails(updatedApps, oldTags, oldAppsTags)
+  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots, updatedAppsVideos, updatedAppDevelopers, updatedAppPublishers) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
   with open('/appdata/newDLCAppDetails.json', 'w', encoding='utf-8') as f:
@@ -325,6 +456,18 @@ def getDLCDetails():
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
   with open('/appdata/updatedDLCScreenshots.json', 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newDLCVideos.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppsVideos, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedDLCVideos.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppsVideos, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newDLCDevelopers.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppDevelopers, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedDLCDevelopers.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppDevelopers, f, ensure_ascii=False, indent=4)
+  with open('/appdata/newDLCPublishers.json', 'w', encoding='utf-8') as f:
+    json.dump(newAppPublishers, f, ensure_ascii=False, indent=4)
+  with open('/appdata/updatedDLCPublishers.json', 'w', encoding='utf-8') as f:
+    json.dump(updatedAppPublishers, f, ensure_ascii=False, indent=4)
 
 ###############################################################################################
 ###############################################################################################
