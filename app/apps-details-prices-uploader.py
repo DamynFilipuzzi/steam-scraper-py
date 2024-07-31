@@ -384,6 +384,20 @@ def getOldDevelopers():
   
   return oldDevsList
 
+def getOldAppsDevelopers():
+  # Get all Developers from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * From "Apps_Developers"')
+  devsOld = cur.fetchall()
+  oldAppsDevsList = dict()
+  for devs in devsOld:
+    oldAppsDevsList.setdefault(devs[0], {})[devs[1]] = ({"steam_id": devs[1]})
+  
+  return oldAppsDevsList
+
 # Store New Developers
 @timing
 def storeNewDevelopers(developersList):
@@ -424,11 +438,16 @@ def storeAppsDevelopers(newAppsDevelopers):
   storeNewDevelopers(devsToStore)
   # Get updated data for Developers (Id's for recently created Developers).
   oldDevs = getOldDevelopers()
+  oldAppsDevs = getOldAppsDevelopers()
   appsDevelopersTuple = []
   for app in newAppsDevelopers:
     for dev in newAppsDevelopers[app]:
       if (dev in oldDevs):
-        appsDevelopersTuple.append((int(oldDevs[dev]), int(app)))
+        if (oldDevs[dev] in oldAppsDevs):
+          if (int(app) not in oldAppsDevs[oldDevs[dev]]):
+            appsDevelopersTuple.append((int(oldDevs[dev]), int(app)))
+        else:
+          appsDevelopersTuple.append((int(oldDevs[dev]), int(app)))
   # Store Apps_Developers
   try:
     load_dotenv()
@@ -462,6 +481,20 @@ def getOldPublishers():
     oldPubsList[pubs[1]] = pubs[0]
   
   return oldPubsList
+
+def getOldAppsPublishers():
+  # Get all Developers from db
+  load_dotenv()
+  connection_string = os.getenv('DATABASE_URL_PYTHON')
+  conn = psycopg2.connect(connection_string)
+  cur = conn.cursor()
+  cur.execute('SELECT * From "Apps_Publishers"')
+  pubsOld = cur.fetchall()
+  oldAppsPubsList = dict()
+  for pubs in pubsOld:
+    oldAppsPubsList.setdefault(pubs[0], {})[pubs[1]] = ({"steam_id": pubs[1]})
+  
+  return oldAppsPubsList
 
 # Store New Publisher
 @timing
@@ -503,11 +536,16 @@ def storeAppsPublishers(newAppsPublishers):
   storeNewPublishers(pubsToStore)
   # Get updated data for Publishers (Id's for recently created Publishers).
   oldPubs = getOldPublishers()
+  oldAppsPubs = getOldAppsPublishers()
   appsPublishersTuple = []
   for app in newAppsPublishers:
     for pub in newAppsPublishers[app]:
       if (pub in oldPubs):
-        appsPublishersTuple.append((int(oldPubs[pub]), int(app)))
+        if (oldPubs[pub] in oldAppsPubs):
+          if (int(app) not in oldAppsPubs[oldPubs[pub]]):
+            appsPublishersTuple.append((int(oldPubs[pub]), int(app)))
+        else:
+          appsPublishersTuple.append((int(oldPubs[pub]), int(app)))
   # Store Apps_Publishers
   try:
     load_dotenv()
