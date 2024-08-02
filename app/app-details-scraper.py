@@ -268,7 +268,7 @@ def getDetails(appData, oldTags, oldAppsTags):
                   devs.append(developer)
             # Remove duplicates & Store Results (Rare edge case. Steam_ID: 2342690)
             if (len(devs) > 0):
-              appDevelopers[app] = set(devs)
+              appDevelopers[app] = list(set(devs))
 
             # Get Publishers
             pubs = []
@@ -283,7 +283,7 @@ def getDetails(appData, oldTags, oldAppsTags):
                   pubs.append(publisher)
             # Remove duplicates & Store Results (Rare edge case. Steam_ID: 2342690)
             if (len(pubs) > 0):
-              appPublishers[app] = set(pubs)
+              appPublishers[app] = list(set(pubs))
 
             # Query AppReviews
             reviewsUrl = "https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=app)
