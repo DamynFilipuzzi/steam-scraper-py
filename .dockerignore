@@ -1,5 +1,7 @@
 /data
-# .env
-# /env
+.env
+/env
 /common_files
 /appdata
+/app/__pycache__
+.coverage

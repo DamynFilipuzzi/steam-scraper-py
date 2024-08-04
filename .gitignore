@@ -3,3 +3,5 @@
 /data
 /common_files
 /appdata
+/app/__pycache__
+.coverage
