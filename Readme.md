@@ -3,7 +3,7 @@
   <a href="https://www.steamdeals.ca" target="_blank"><img width="96px" src="https://www.steamdeals.ca/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fandroid-chrome-192x192.7be14410.png&w=128&q=75" /></a>
   <h2 align="center">Steam Deals</h2>
   <p align="center">
-    Steam Deals is a web application created with the intention of making purchasing steam games easier. This project is still in early development, but a live version can be found <a href='https://www.steamdeals.ca'>here</a>. This project is supported by this <a href="https://github.com/DamynFilipuzzi/Steam-Scraper">repository</a> to display the scraped content.
+    Steam Deals is a web application created with the intention of making purchasing steam games easier. This project is still in early development, but a live version can be found <a href='https://www.steamdeals.ca'>here</a>. This project is supported by this <a href="https://github.com/DamynFilipuzzi/steam-deals">repository</a> to display the scraped content.
   </p>
 </p>
 

@@ -8,8 +8,10 @@ import time
 import psycopg2
 import psycopg2.extras
 from requests_ip_rotator import ApiGateway
+from fp.fp import FreeProxy
 
-RATE = 1.5
+RATELIMIT = 1.5
+THREADS = 10
 
 def getTags():
   # Get all apps from db
@@ -90,60 +92,164 @@ def getNewAndUpdatedApps(data, oldAppsList):
 
   return (newApps, updatedApps)
 
-def getAppDetails(id, queue, resultsQueue):
+def getAppDetails(id, appQueue, appsDetails, appsTags, appsScreenshots, oldTags, oldAppsTags, oldAppsScreenshots, oldApps):
   load_dotenv()
-  c = 0
   # Create gateway object and initialise in AWS
   gateway = ApiGateway("https://store.steampowered.com/{id}".format(id=id), access_key_id=os.getenv('AWS_ACCESS_KEY_ID'), access_key_secret=os.getenv('AWS_SECRET_ACCESS_KEY'), regions=['us-west-1'])
   gateway.start()
   # Assign gateway to session
   session = requests.Session()
   session.mount("https://store.steampowered.com/{id}".format(id=id), gateway)
-  # for i in range(50):
-  while(queue.empty() == False):
+  while(appQueue.empty() == False):
     start = time.time()
-    # Send request (IP will be randomized)
-    # response = session.get("https://store.steampowered.com/api/appdetails?appids=%s&cc=CA", queue.get())
-    response = session.get(queue.get())
-    c += 1
-    if (response.status_code != 200):
-      print('####')
-      print('ID: ', id, " - BIG FAIL")
-      print(response.status_code)
-      print('####')
-    else:
-      print('ID: ', id, ' - Success', ' - Count: ', c )
-      results = json.loads(response.text)
-      if (results[str(730)]['success'] == True and "data" in results[str(730)]):
-        type = results[str(730)]['data']['type'] if results[str(730)]['data']['type'] != None else None
-        resultsQueue.put({"ID": id, 'StatusCode': response.status_code, 'Type': type})
-    # Ensure that each request does not exceed the defined rate
+    appId = appQueue.get()
+    response = session.get('https://httpbin.org/ip')
+    print('thread: ', id , ' code: ', response.status_code, ' text IP: ', response.text)
+    # # Send request (IP will be randomized)
+    # response = session.get("https://store.steampowered.com/api/appdetails?appids={app}&cc=CA".format(app=appId))
+    # if (response.status_code == 200 and len(response.text) > 0):
+    #   print('Thread ID: ', id, ' - Success - AppId: ', appId)
+    #   results = json.loads(response.text)
+    #   if (results[str(appId)]['success'] == True):
+    #     if ("data" in results[str(appId)]):
+    #       # Get info in data
+    #       hasDetails = True
+    #       type = results[str(appId)]['data']['type'] if results[str(appId)]['data']['type'] != None else None
+    #       # If app is dlc get the parent app id and if app is in database
+    #       if (str(type) == 'dlc'):
+    #         if ('fullgame' in results[str(appId)]['data']):
+    #           parentApp = int(results[str(appId)]['data']['fullgame']['appid'])
+    #           if (parentApp in oldApps):
+    #             dlcSteamId = parentApp
+    #           else:
+    #             # check new apps for parent app
+    #             file = open('/appdata/newAppDetails.json', encoding="utf-8")
+    #             newAppDetails = json.load(file)
+    #             if (parentApp in newAppDetails):
+    #               if (newAppDetails[parentApp]['HasDetails'] == True):
+    #                 dlcSteamId = parentApp
+    #               else:
+    #                 dlcSteamId = None
+    #             else:
+    #               dlcSteamId = None
+    #         else:
+    #           dlcSteamId = None
+    #       else:
+    #         dlcSteamId = None
+          
+    #       isFree = results[str(appId)]['data']['is_free'] if results[str(appId)]['data']['is_free'] != None else None
+    #       desc = results[str(appId)]['data']['about_the_game'] if results[str(appId)]['data']['about_the_game'] != None else None
+    #       shortDesc = results[str(appId)]['data']['short_description'] if results[str(appId)]['data']['short_description'] != None else None
+    #       isMature = False if results[str(appId)]['data']['required_age'] == 0 else True
+    #       # Get info in Price_Overview
+    #       if ("price_overview" in results[str(appId)]['data']): 
+    #         currency = results[str(appId)]['data']['price_overview']['currency'] if results[str(appId)]['data']['price_overview']['currency'] != None else None
+    #         originalPrice = results[str(appId)]['data']['price_overview']['initial'] if results[str(appId)]['data']['price_overview']['initial'] != None else None
+    #         discountPrice = results[str(appId)]['data']['price_overview']['final'] if results[str(appId)]['data']['price_overview']['final'] != None else None
+    #       else:
+    #         currency = None
+    #         originalPrice = None
+    #         discountPrice = None
+          
+    #       # get AppTags
+    #       if ('genres' in results[str(appId)]['data']):
+    #         for tag in results[str(appId)]['data']['genres']:
+    #           if (tag['description'] in oldTags):
+    #             tagId = int(oldTags[tag['description']]['tag_id'])
+    #             if (int(appId) in oldAppsTags):
+    #               if (int(tagId) not in oldAppsTags[int(appId)]):
+    #                 # appTags.setdefault(appId, {})[oldTags[tag['description']]['tag_id']] = tag['description']
+    #                 appsTags.put({'AppId': appId, 'TagId': oldTags[tag['description']]['tag_id'], 'TagDesc': tag['description']})
+    #             else:
+    #               # appTags.setdefault(appId, {})[oldTags[tag['description']]['tag_id']] = tag['description']
+    #               appsTags.put({'AppId': appId, 'TagId': oldTags[tag['description']]['tag_id'], 'TagDesc': tag['description']})
+          
+    #       # get Screenshots
+    #       if ("screenshots" in results[str(appId)]['data']):
+    #         for image in results[str(appId)]['data']['screenshots']:
+    #           if (int(appId) in oldAppsScreenshots):
+    #             if (image['id'] in oldAppsScreenshots[int(appId)]):
+    #               if (image['path_thumbnail'] not in oldAppsScreenshots[int(appId)][image['id']]['path_thumbnail'] or image['path_full'] not in oldAppsScreenshots[int(appId)][image['id']]['path_full']):
+    #                 # either the thumbnail or full_path is different at the current order id. store screenshots
+    #                 # appScreenshots.setdefault(appId, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
+    #                 appsScreenshots.put({'AppId': appId, 'ImageId': image['id'], 'PathThumbnail': image['path_thumbnail'], 'PathFull': image['path_full']})
+    #             else:
+    #               # id does not exist in old screenshots. store new id screenshots.
+    #               # appScreenshots.setdefault(appId, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
+    #               appsScreenshots.put({'AppId': appId, 'ImageId': image['id'], 'PathThumbnail': image['path_thumbnail'], 'PathFull': image['path_full']})
+    #           else:
+    #             # app does not exist in old screenshots. store new apps screenshots.
+    #             # appScreenshots.setdefault(appId, {})[image['id']] = ({"path_thumbnail": image['path_thumbnail'], "path_full": image['path_full']})
+    #             appsScreenshots.put({'AppId': appId, 'ImageId': image['id'], 'PathThumbnail': image['path_thumbnail'], 'PathFull': image['path_full']})
+          
+    #       # Query AppReviews
+    #       # Send request for reviews (IP will be randomized)
+    #       response = session.get("https://store.steampowered.com/appreviews/{app}?json=1&purchase_type=all&language=english".format(app=appId))
+    #       if (response.status_code == 200 and len(response.text) > 0):
+    #         reviewsResults = json.loads(response.text)
+    #         if (reviewsResults['success'] == 1):
+    #           if ("query_summary" in reviewsResults):
+    #             if ('total_positive' in reviewsResults['query_summary']):
+    #               positiveReviews = reviewsResults['query_summary']['total_positive'] if reviewsResults['query_summary']['total_positive'] != None else None
+    #             else:
+    #               positiveReviews = None
+    #             if ('total_reviews' in reviewsResults['query_summary']):
+    #               totalReviews = reviewsResults['query_summary']['total_reviews'] if reviewsResults['query_summary']['total_reviews'] != None else None
+    #             else:
+    #               totalReviews = None
+    #           else:
+    #             positiveReviews = None
+    #             totalReviews = None
+    #         else:
+    #           # AppReviews has no details.
+    #           positiveReviews = None
+    #           totalReviews = None
+    #       else:
+    #         positiveReviews = None
+    #         totalReviews = None
+
+    #       appsDetails.put({"ID": id, 'StatusCode': response.status_code, 'SteamID': appId, 'HasDetails': hasDetails, 'Type': type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, 'DlcSteamID': dlcSteamId, 'Currency': currency, 'DiscountPrice': discountPrice, 'OriginalPrice': originalPrice, 'PositiveReviews': positiveReviews, 'TotalReviews': totalReviews})
+    #     else:
+    #       appsDetails.put({"ID": id, 'StatusCode': response.status_code, 'SteamID': appId, 'HasDetails': False, 'Type': None, "IsMature": None, "IsFree": None, "Description": None, "ShortDesc": None, 'DlcSteamID': None, 'Currency': None, 'DiscountPrice': None, 'OriginalPrice': None, 'PositiveReviews': None, 'TotalReviews': None})
+    #   else:
+    #     appsDetails.put({"ID": id, 'StatusCode': response.status_code, 'SteamID': appId, 'HasDetails': False, 'Type': None, "IsMature": None, "IsFree": None, "Description": None, "ShortDesc": None, 'DlcSteamID': None, 'Currency': None, 'DiscountPrice': None, 'OriginalPrice': None, 'PositiveReviews': None, 'TotalReviews': None})
+    # else:
+    #   appsDetails.put({"ID": id, 'StatusCode': response.status_code, 'SteamID': appId, 'HasDetails': False, 'Type': None, "IsMature": None, "IsFree": None, "Description": None, "ShortDesc": None, 'DlcSteamID': None, 'Currency': None, 'DiscountPrice': None, 'OriginalPrice': None, 'PositiveReviews': None, 'TotalReviews': None})
+    # # Ensure that each request does not exceed the defined rate
     totalTime = time.time() - start
-    delay = RATE - totalTime
+    delay = RATELIMIT - totalTime
     if (delay > 0):
       time.sleep(delay)
   
+  # shutdown gateway and return
   gateway.shutdown()
-  return c
+  return
 
-def createList():
-  print()
-
-def createThreads():
+def createThreads(apps):
+  oldTags = getTags()
+  oldAppsTags = getAppsTags()
+  oldAppsScreenshots = getAppsScreenshots()
+  oldApps = getOldApps()
+  
   with Manager() as manager:
-    urlQueue = manager.Queue()
-    for i in range(5000):
-      urlQueue.put("https://store.steampowered.com/api/appdetails?appids=730&cc=CA")
-    threads = 10
-    print('creating ' , threads, ' processes')
+    # store apps in a shared Queue
+    appQueue = manager.Queue()
+    for app in apps:
+      appQueue.put(app)
 
-    resultsQueue = manager.Queue()
+    print('creating ' , THREADS, ' processes')
+
+    appsDetails = manager.Queue()
+    appsTags = manager.Queue()
+    appsScreenshots = manager.Queue()
     jobs = []
-    for id in range(threads):
-      process = Process(target=getAppDetails, args=[id, urlQueue, resultsQueue])
+    for id in range(THREADS):
+      process = Process(target=getAppDetails, args=[id, appQueue, appsDetails, appsTags, appsScreenshots, oldTags, oldAppsTags, oldAppsScreenshots, oldApps])
       jobs.append(process)
+
     # Start the processes
     for j in jobs:
+      # Sleep is required for ensuring api gateway does not return error code 429 when trying to create too many gateways in a short burst
       time.sleep(6)
       j.start()
 
@@ -152,26 +258,31 @@ def createThreads():
       print(j)
       j.join()
     
-    print('Results size: ',   resultsQueue.qsize())
+    print('Apps Details size: ', appsDetails.qsize(), ' Assert output correct size: ', (appsDetails.qsize() == len(apps)))
+    for i in range(appsDetails.qsize()):
+      # appDetails[app] = ({"HasDetails": hasDetails ,"Type": type, "IsMature": isMature, "IsFree": isFree, "Description": desc, "ShortDesc": shortDesc, "Currency": currency, "OriginalPrice": originalPrice, "DiscountPrice": discountPrice, "PositiveReviews": positiveReviews, "TotalReviews": totalReviews, "DlcSteamId": dlcSteamId, "UpdatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+      app = appsDetails.get()
+      print(app)
 
-# def getGameDetails():
-#   # Retrieves all old tags from db
-#   oldTags = getTags()
-#   # Retrieves all old Apps_tags from db
-#   oldAppsTags = getAppsTags()
-#   # Retrieves new apps from file
-#   data = getNewApps('appdata/apps.json')
-#   # Retrieves old apps from db
-#   oldAppsList = getOldApps()
-#   # Get new and updated apps 
-#   (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
+    print('Apps Tags size: ', appsTags.qsize())
+    print('Apps Screenshots size: ', appsScreenshots.qsize())
 
-#   # Retrieve New and updated app details 
-#   print("Retrieving Info for ", len(newApps), "NEW GAME Apps")
-#   (newAppDetails, newAppsTags, newAppsScreenshots) = createThreads(newApps, oldTags, oldAppsTags)
+    return (appsDetails, appsTags, appsScreenshots)
 
-#   print("Retrieving Info for ", len(updatedApps), "Updated GAME Apps")
-#   (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots) = createThreads(updatedApps, oldTags, oldAppsTags)
+def getGameDetails():
+  # Retrieves new apps from file
+  data = getNewApps('appdata/apps.json')
+  # Retrieves old apps from db
+  oldAppsList = getOldApps()
+  # Get new and updated apps 
+  (newApps, updatedApps) = getNewAndUpdatedApps(data, oldAppsList)
+
+  # Retrieve New and updated app details 
+  # print("Retrieving Info for ", len(newApps), "NEW GAME Apps")
+  # (newAppDetails, newAppsTags, newAppsScreenshots) = createThreads(newApps)
+
+  print("Retrieving Info for ", len(updatedApps), "Updated GAME Apps")
+  (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots) = createThreads(updatedApps)
 
   # Write data to files
   # with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
@@ -188,8 +299,23 @@ def createThreads():
   #   json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
 
 def main():
-  # getGameDetails()
-  createThreads()
+  # user = 'iqfubfcm'
+  # password = 'kpeex49n4fe3'
+  # proxy = 'http://38.154.227.167:5868'
+  # 'https://user:password@proxyip:port'
+  response = requests.get('https://httpbin.org/ip')
+  print('Code: ', response.status_code, ' text IP: ', response.text)
+  
+  response = requests.get('http://httpbin.org/ip', proxies={'http': 'http://iqfubfcm:kpeex49n4fe3@38.154.227.167:5868'})
+  print('Code: ', response.status_code, ' text IP: ', response.text)
+  # proxy = FreeProxy().get()
+  # print(proxy)
+  # # getGameDetails()
+  # response = requests.request('GET', 'https://httpbin.org/ip', proxies={'http': proxy, 'https': proxy})
+  # print('thread: ', id , ' code: ', response.status_code, ' text IP: ', response.text)
+  # response = requests.request('GET', 'https://httpbin.org/ip')
+  # print('thread: ', id , ' code: ', response.status_code, ' text IP: ', response.text)
+  
 
 if __name__ == '__main__':
   main()
