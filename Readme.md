@@ -11,9 +11,10 @@
 
 1. Install docker if you don't already have it
 2. Copy `.env.example` to `.env` and file with your database information, and <a href="https://steamcommunity.com/dev/apikey">Steam API key</a>
-3. Run `docker-compose up --build`
+3. Run `docker compose -p steam-scraper -f docker-compose.yml up --build`
+4. (Optional) After the initial data set is complete you can Run `docker compose -p top-100-scraper -f docker-compose-charts.yml up --build --remove-orphans`
 
 <p style="font-size: 14px;"> 
 <span style="font-weight: bold;">Note:</span> 
-The initial scrape will take 40+ hours to complete. This is because the code follows the rate limit set by Valve Inc. After which, it typically completes a scrape in just under an hour.
+The initial scrape will take 40+ hours to complete. This is because the code follows the rate limit set by Valve Inc. After which, it typically completes a scrape in just under an hour. The overall time can be reduced if you use multiple proxies (WIP).
 </p>
