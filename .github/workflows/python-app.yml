@@ -32,5 +32,4 @@ jobs:
           pip install -r requirements.txt
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov
-          pytest .\tests\tests.py --cov=app
+          pytest ./tests/tests.py --cov=app
