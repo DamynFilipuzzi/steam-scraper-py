@@ -1,6 +1,6 @@
 services:
   parallel-scrape:
     build: ./
-    command: python3 ./parallel-POC.py
+    command: python3 ./app/parallel-POC.py
     volumes:
       - ./appdata:/appdata

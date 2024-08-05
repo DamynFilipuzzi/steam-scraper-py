@@ -1,6 +1,6 @@
 services:
   top-100:
     build: ./
-    command: python3 ./top-100.py
+    command: python3 ./app/top-100.py
     volumes:
       - ./appdata:/appdata

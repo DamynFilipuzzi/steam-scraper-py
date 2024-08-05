@@ -1,5 +1,5 @@
 #  Command to run:
-# pytest .\tests\tests.py --cov=app --cov-report=html
+# pytest .\tests\tests.py --cov=app
 
 import pytest
 import os.path

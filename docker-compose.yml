@@ -1,25 +1,25 @@
 services:
   apps-scraper:
     build: ./
-    command: python3 ./apps-scraper.py
+    command: python3 ./app/apps-scraper.py
     volumes:
       - ./appdata:/appdata
 
   dlc-scraper:
     build: ./
-    command: python3 ./dlc-scraper.py
+    command: python3 ./app/dlc-scraper.py
     volumes:
       - ./appdata:/appdata
 
   tags-creator:
     build: ./
-    command: python3 ./tags-creator.py
+    command: python3 ./app/tags-creator.py
     volumes:
       - ./appdata:/appdata
 
   app-details-scraper:
     build: ./
-    command: python3 ./app-details-scraper.py
+    command: python3 ./app/app-details-scraper.py
     volumes:
       - ./appdata:/appdata
     depends_on:
@@ -30,20 +30,20 @@ services:
       tags-creator:
         condition: service_completed_successfully
 
-  uploader:
-    build: ./
-    command: python3 ./apps-details-prices-uploader.py
-    volumes:
-      - ./appdata:/appdata
-    depends_on:
-      apps-scraper:
-        condition: service_completed_successfully
-      app-details-scraper:
-        condition: service_completed_successfully
-      tags-creator:
-        condition: service_completed_successfully
-      dlc-scraper:
-        condition: service_completed_successfully
+  # uploader:
+  #   build: ./
+  #   command: python3 ./app/apps-details-prices-uploader.py
+  #   volumes:
+  #     - ./appdata:/appdata
+  #   depends_on:
+  #     apps-scraper:
+  #       condition: service_completed_successfully
+  #     app-details-scraper:
+  #       condition: service_completed_successfully
+  #     tags-creator:
+  #       condition: service_completed_successfully
+  #     dlc-scraper:
+  #       condition: service_completed_successfully
 #
 #
 #
