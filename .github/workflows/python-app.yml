@@ -22,13 +22,18 @@ jobs:
         with:
           python-version: "3.11.3"
       - name: "Create env file"
-        env:
-          DATABASE_URL_PYTHON: ${{ secrets.DATABASE_URL_PYTHON }}
-          STEAM_API_KEY=: ${{ secrets.STEAM_API_KEY }}
+        # env:
+        #   DATABASE_URL_PYTHON: ${{ secrets.DATABASE_URL_PYTHON }}
+        #   STEAM_API_KEY=: ${{ secrets.STEAM_API_KEY }}
+        # run: |
+        #   touch .env
+        #   echo DATABASE_URL_PYTHON="$DATABASE_URL_PYTHON" >> .env
+        #   echo STEAM_API_KEY="$STEAM_API_KEY" >> .env
+        #   cat .env
         run: |
           touch .env
-          echo DATABASE_URL_PYTHON="$DATABASE_URL_PYTHON" >> .env
-          echo STEAM_API_KEY="$STEAM_API_KEY" >> .env
+          echo "DATABASE_URL_PYTHON=${{ secrets.DATABASE_URL_PYTHON }}" >> .env
+          echo "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}" >> .env
           cat .env
       - name: Install dependencies
         run: |
@@ -37,9 +42,3 @@ jobs:
       - name: Test with pytest
         run: |
           pytest ./tests/tests.py --cov=app
-
-        # run: |
-        #   touch .env
-        #   echo STEAM_API_KEY=${{ secrets.STEAM_API_KEY }} >> .env
-        #   echo STEAM_API_KEY=${{ secrets.STEAM_API_KEY }} >> .env
-        #   cat .env
