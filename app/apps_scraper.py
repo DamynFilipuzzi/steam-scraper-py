@@ -1,10 +1,16 @@
 import os
+import sys
 from dotenv import load_dotenv
 import requests
 import json
 import time
 from datetime import datetime
-from app.lib.utils import Utils
+# Add the appropriate paths depending on the environment
+if os.environ.get('DOCKERIZED'):
+    from lib.utils import Utils
+else:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from app.lib.utils import Utils
 
 class AppsScraper:
   def main():

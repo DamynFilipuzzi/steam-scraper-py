@@ -1,13 +1,13 @@
 services:
-  apps-scraper:
+  apps_scraper:
     build: ./
-    command: python3 ./app/apps-scraper.py
+    command: python3 ./app/apps_scraper.py
     volumes:
       - ./appdata:/appdata
 
-  dlc-scraper:
+  dlc_scraper:
     build: ./
-    command: python3 ./app/dlc-scraper.py
+    command: python3 ./app/dlc_scraper.py
     volumes:
       - ./appdata:/appdata
 
@@ -23,46 +23,24 @@ services:
     volumes:
       - ./appdata:/appdata
     depends_on:
-      apps-scraper:
+      apps_scraper:
         condition: service_completed_successfully
-      dlc-scraper:
+      dlc_scraper:
         condition: service_completed_successfully
       tags-creator:
         condition: service_completed_successfully
 
-  # uploader:
-  #   build: ./
-  #   command: python3 ./app/apps-details-prices-uploader.py
-  #   volumes:
-  #     - ./appdata:/appdata
-  #   depends_on:
-  #     apps-scraper:
-  #       condition: service_completed_successfully
-  #     app-details-scraper:
-  #       condition: service_completed_successfully
-  #     tags-creator:
-  #       condition: service_completed_successfully
-  #     dlc-scraper:
-  #       condition: service_completed_successfully
-#
-#
-#
-# TODO UPDATE and Add tags-creator and tags-uploader
-
-# game-tag-creator:
-#   build: ./
-#   command: python3 ./game-tag-creator.py
-#   volumes:
-#     - ./appdata:/appdata
-#   depends_on:
-#     games-scraper:
-#       condition: service_completed_successfully
-
-# game-tag-uploader:
-#   build: ./
-#   command: python3 ./game-tag-uploader.py
-#   volumes:
-#     - ./appdata:/appdata
-#   depends_on:
-#     game-tag-creator:
-#       condition: service_completed_successfully
+  uploader:
+    build: ./
+    command: python3 ./app/apps-details-prices-uploader.py
+    volumes:
+      - ./appdata:/appdata
+    depends_on:
+      apps_scraper:
+        condition: service_completed_successfully
+      dlc_scraper:
+        condition: service_completed_successfully
+      tags-creator:
+        condition: service_completed_successfully
+      app-details-scraper:
+        condition: service_completed_successfully
