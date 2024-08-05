@@ -32,8 +32,8 @@ jobs:
         #   cat .env
         run: |
           touch .env
-          echo "DATABASE_URL_PYTHON=${{ secrets.DATABASE_URL_PYTHON }}" >> .env
-          echo "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}" >> .env
+          echo DATABASE_URL_PYTHON=${{ secrets.DATABASE_URL_PYTHON }} >> .env
+          echo STEAM_API_KEY=${{ secrets.STEAM_API_KEY }} >> .env
           cat .env
       - name: Install dependencies
         run: |
