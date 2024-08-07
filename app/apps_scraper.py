@@ -12,6 +12,7 @@ else:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     from app.lib.utils import Utils
 
+
 class AppsScraper:
   def main():
     start = time.time()
@@ -39,7 +40,7 @@ class AppsScraper:
         hasMoreResults = False
 
     Utils.checkIfDirectoryExists()
-    relative_path = os.path.join('../appdata', 'apps.json')
+    relative_path = os.path.join(Utils.getSubDirectory(), 'apps.json')
     with open(relative_path, 'w', encoding='utf-8') as f:
       json.dump(apps, f, ensure_ascii=False, indent=4)
 

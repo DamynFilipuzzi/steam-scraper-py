@@ -39,7 +39,7 @@ class DlcScraper:
         hasMoreResults = False
 
     Utils.checkIfDirectoryExists()
-    relative_path = os.path.join('../appdata', 'dlc.json')
+    relative_path = os.path.join(Utils.getSubDirectory(), 'dlc.json')
     with open(relative_path, 'w', encoding='utf-8') as f:
       json.dump(apps, f, ensure_ascii=False, indent=4)
 

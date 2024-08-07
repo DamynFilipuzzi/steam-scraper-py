@@ -8,6 +8,12 @@ from tqdm import tqdm
 from datetime import datetime
 import logging
 import time
+# Add the appropriate paths depending on the environment
+if os.environ.get('DOCKERIZED'):
+    from lib.utils import Utils
+else:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from app.lib.utils import Utils
 
 def timing(f):
     def wrap(*args, **kwargs):
@@ -569,55 +575,55 @@ def storeAppsPublishers(newAppsPublishers):
 def storeGameApps():
   logging.info("Storing Apps-Games")
   # Get all Apps Details
-  relative_path = os.path.join('../appdata', 'apps.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'apps.json')
   file = open(relative_path, encoding="utf-8")
   apps = json.load(file)
   # Get New Apps Details
-  relative_path = os.path.join('../appdata', 'newAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppDetails.json')
   file = open(relative_path, encoding="utf-8")
   newAppDetails = json.load(file)
   # Get Updated App Details
-  relative_path = os.path.join('../appdata', 'updatedAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppDetails.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppDetails = json.load(file)
   # Get New Tags
-  relative_path = os.path.join('../appdata', 'newAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppsTags.json')
   file = open(relative_path, encoding="utf-8")
   newAppsTags = json.load(file)
   # Get Updated Tags
-  relative_path = os.path.join('../appdata', 'updatedAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppsTags.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsTags = json.load(file)
   # Get new Screenshots
-  relative_path = os.path.join('../appdata', 'newAppsScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppsScreenshots.json')
   file = open(relative_path, encoding="utf-8")
   newAppsScreenshots = json.load(file)
   # Get updated Screenshots
-  relative_path = os.path.join('../appdata', 'updatedAppsScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppsScreenshots.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsScreenshots = json.load(file)
   # Get new Videos
-  relative_path = os.path.join('../appdata', 'newAppsVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppsVideos.json')
   file = open(relative_path, encoding="utf-8")
   newAppsVideos = json.load(file)
   # Get updated Videos
-  relative_path = os.path.join('../appdata', 'updatedAppsVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppsVideos.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsVideos = json.load(file)
   # Get new App Developers
-  relative_path = os.path.join('../appdata', 'newAppDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppDevelopers.json')
   file = open(relative_path, encoding="utf-8")
   newAppsDevelopers = json.load(file)
   # Get Updated App Developers
-  relative_path = os.path.join('../appdata', 'updatedAppDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppDevelopers.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsDevelopers = json.load(file)
   # Get new App Publishers
-  relative_path = os.path.join('../appdata', 'newAppPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppPublishers.json')
   file = open(relative_path, encoding="utf-8")
   newAppsPublishers = json.load(file)
   # Get Updated App Publishers
-  relative_path = os.path.join('../appdata', 'updatedAppPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppPublishers.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsPublishers = json.load(file)
 
@@ -656,55 +662,55 @@ def storeGameApps():
 def storeDLCApps():
   logging.info("Storing Apps-DLC")
   # Get all Apps Details
-  relative_path = os.path.join('../appdata', 'dlc.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'dlc.json')
   file = open(relative_path, encoding="utf-8")
   apps = json.load(file)
   # Get New Apps Details
-  relative_path = os.path.join('../appdata', 'newDLCAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCAppDetails.json')
   file = open(relative_path, encoding="utf-8")
   newAppDetails = json.load(file)
   # Get Updated App Details
-  relative_path = os.path.join('../appdata', 'updatedDLCAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCAppDetails.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppDetails = json.load(file)
   # Get New Tags
-  relative_path = os.path.join('../appdata', 'newDLCAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCAppsTags.json')
   file = open(relative_path, encoding="utf-8")
   newAppsTags = json.load(file)
   # Get Updated Tags
-  relative_path = os.path.join('../appdata', 'updatedDLCAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCAppsTags.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsTags = json.load(file)
   # Get new Screenshots
-  relative_path = os.path.join('../appdata', 'newDLCScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCScreenshots.json')
   file = open(relative_path, encoding="utf-8")
   newAppsScreenshots = json.load(file)
   # Get updated Screenshots
-  relative_path = os.path.join('../appdata', 'updatedDLCScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCScreenshots.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsScreenshots = json.load(file)
   # Get new Videos
-  relative_path = os.path.join('../appdata', 'newDLCVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCVideos.json')
   file = open(relative_path, encoding="utf-8")
   newAppsVideos = json.load(file)
   # Get updated Videos
-  relative_path = os.path.join('../appdata', 'updatedDLCVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCVideos.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsVideos = json.load(file)
   # Get new App Developers
-  relative_path = os.path.join('../appdata', 'newDLCDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCDevelopers.json')
   file = open(relative_path, encoding="utf-8")
   newAppsDevelopers = json.load(file)
   # Get Updated App Developers
-  relative_path = os.path.join('../appdata', 'updatedDLCDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCDevelopers.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsDevelopers = json.load(file)
   # Get new App Publishers
-  relative_path = os.path.join('../appdata', 'newDLCPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCPublishers.json')
   file = open(relative_path, encoding="utf-8")
   newAppsPublishers = json.load(file)
   # Get Updated App Publishers
-  relative_path = os.path.join('../appdata', 'updatedDLCPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCPublishers.json')
   file = open(relative_path, encoding="utf-8")
   updatedAppsPublishers = json.load(file)
 
@@ -745,7 +751,7 @@ def storeDLCApps():
 #########################################################################################
 
 def main():
-  relative_path = os.path.join('../appdata', 'errors.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'errors.json')
   logging.basicConfig(filename=relative_path, filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
   storeGameApps()
   storeDLCApps()

@@ -35,7 +35,7 @@ class TagScraper:
           tagsList[tag['tagid']] = {'tag_name': tag['name']}
 
     Utils.checkIfDirectoryExists()
-    relative_path = os.path.join('../appdata', 'tags.json')
+    relative_path = os.path.join(Utils.getSubDirectory(), 'tags.json')
     with open(relative_path, 'w', encoding='utf-8') as f:
       json.dump(tagsList, f, ensure_ascii=False, indent=4)
 
@@ -69,7 +69,7 @@ class TagScraper:
 
   def main():
     tagsList = TagScraper.tagsScraper()
-    relative_path = os.path.join('../appdata', 'errors.log')
+    relative_path = os.path.join(Utils.getSubDirectory(), 'errors.log')
     logging.basicConfig(filename=relative_path, filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
     TagScraper.storeNewTags(tagsList)
 

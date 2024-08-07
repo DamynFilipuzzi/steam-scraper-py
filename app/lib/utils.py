@@ -67,3 +67,9 @@ class Utils:
       oldAppsScreenshotsList.setdefault(screenshot[1], {})[screenshot[4]] = ({"path_thumbnail": screenshot[2], "path_full": screenshot[3]})
 
     return oldAppsScreenshotsList
+  
+  def getSubDirectory():
+    subDirectory = 'appdata'
+    if os.environ.get('DOCKERIZED'):
+      subDirectory = '../appdata'
+    return subDirectory

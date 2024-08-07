@@ -15,9 +15,9 @@ else:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     from app.lib.utils import Utils
 
-
 # Rate at which each request can be made. 
 RATE = 1.5
+
 
 def getAppsScreenshots():
   # Get all apps from db
@@ -153,7 +153,7 @@ def getDetails(appData, oldTags, oldAppsTags):
                   dlcSteamId = parentApp
                 else:
                   # check new apps for parent app
-                  relative_path = os.path.join('../appdata', 'newAppDetails.json')
+                  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppDetails.json')
                   file = open(relative_path, encoding="utf-8")
                   newAppDetails = json.load(file)
                   if (parentApp in newAppDetails):
@@ -364,7 +364,7 @@ def getGameDetails():
   # Retrieves all old Apps_tags from db
   oldAppsTags = Utils.getAppsTags()
   # Retrieves new apps from file
-  relative_path = os.path.join('../appdata', 'apps.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'apps.json')
   data = getNewApps(relative_path)
   # Retrieves old apps from db
   oldAppsList = getOldApps()
@@ -379,40 +379,40 @@ def getGameDetails():
   (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots, updatedAppsVideos, updatedAppDevelopers, updatedAppPublishers) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
-  relative_path = os.path.join('../appdata', 'newAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppDetails.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppDetails.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppsTags.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppsTags.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newAppsScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppsScreenshots.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedAppsScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppsScreenshots.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newAppsVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppsVideos.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsVideos, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedAppsVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppsVideos.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsVideos, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newAppDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppDevelopers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDevelopers, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedAppDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppDevelopers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDevelopers, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newAppPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newAppPublishers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppPublishers, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedAppPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedAppPublishers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppPublishers, f, ensure_ascii=False, indent=4)
 
@@ -422,7 +422,7 @@ def getDLCDetails():
   # Retrieves all old Apps_tags from db
   oldAppsTags = Utils.getAppsTags()
   # Retrieves new apps from file
-  relative_path = os.path.join('../appdata', 'dlc.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'dlc.json')
   data = getNewApps(relative_path)
   # Retrieves old apps from db
   oldAppsList = getOldApps()
@@ -437,40 +437,40 @@ def getDLCDetails():
   (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots, updatedAppsVideos, updatedAppDevelopers, updatedAppPublishers) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
-  relative_path = os.path.join('../appdata', 'newDLCAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCAppDetails.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedDLCAppDetails.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCAppDetails.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newDLCAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCAppsTags.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedDLCAppsTags.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCAppsTags.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newDLCScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCScreenshots.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedDLCScreenshots.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCScreenshots.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newDLCVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCVideos.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsVideos, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedDLCVideos.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCVideos.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsVideos, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newDLCDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCDevelopers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDevelopers, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedDLCDevelopers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCDevelopers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDevelopers, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'newDLCPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'newDLCPublishers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppPublishers, f, ensure_ascii=False, indent=4)
-  relative_path = os.path.join('../appdata', 'updatedDLCPublishers.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'updatedDLCPublishers.json')
   with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppPublishers, f, ensure_ascii=False, indent=4)
 
