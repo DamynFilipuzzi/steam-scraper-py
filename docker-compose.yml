@@ -11,9 +11,9 @@ services:
     volumes:
       - ./appdata:/appdata
 
-  tags-creator:
+  tags_creator:
     build: ./
-    command: python3 ./app/tags-creator.py
+    command: python3 ./app/tags_creator.py
     volumes:
       - ./appdata:/appdata
 
@@ -27,7 +27,7 @@ services:
         condition: service_completed_successfully
       dlc_scraper:
         condition: service_completed_successfully
-      tags-creator:
+      tags_creator:
         condition: service_completed_successfully
 
   uploader:
@@ -40,7 +40,7 @@ services:
         condition: service_completed_successfully
       dlc_scraper:
         condition: service_completed_successfully
-      tags-creator:
+      tags_creator:
         condition: service_completed_successfully
       app-details-scraper:
         condition: service_completed_successfully
