@@ -39,7 +39,7 @@ class AppsScraper:
         hasMoreResults = False
 
     Utils.checkIfDirectoryExists()
-    relative_path = os.path.join('appdata', 'apps.json')
+    relative_path = os.path.join('../appdata', 'apps.json')
     with open(relative_path, 'w', encoding='utf-8') as f:
       json.dump(apps, f, ensure_ascii=False, indent=4)
 

@@ -569,43 +569,56 @@ def storeAppsPublishers(newAppsPublishers):
 def storeGameApps():
   logging.info("Storing Apps-Games")
   # Get all Apps Details
-  file = open('/appdata/apps.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'apps.json')
+  file = open(relative_path, encoding="utf-8")
   apps = json.load(file)
   # Get New Apps Details
-  file = open('/appdata/newAppDetails.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newAppDetails.json')
+  file = open(relative_path, encoding="utf-8")
   newAppDetails = json.load(file)
   # Get Updated App Details
-  file = open('/appdata/updatedAppDetails.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedAppDetails.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppDetails = json.load(file)
   # Get New Tags
-  file = open('/appdata/newAppsTags.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newAppsTags.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsTags = json.load(file)
   # Get Updated Tags
-  file = open('/appdata/updatedAppsTags.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedAppsTags.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsTags = json.load(file)
   # Get new Screenshots
-  file = open('/appdata/newAppsScreenshots.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newAppsScreenshots.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsScreenshots = json.load(file)
   # Get updated Screenshots
-  file = open('/appdata/updatedAppsScreenshots.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedAppsScreenshots.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsScreenshots = json.load(file)
   # Get new Videos
-  file = open('/appdata/newAppsVideos.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newAppsVideos.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsVideos = json.load(file)
   # Get updated Videos
-  file = open('/appdata/updatedAppsVideos.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedAppsVideos.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsVideos = json.load(file)
   # Get new App Developers
-  file = open('/appdata/newAppDevelopers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newAppDevelopers.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsDevelopers = json.load(file)
   # Get Updated App Developers
-  file = open('/appdata/updatedAppDevelopers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedAppDevelopers.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsDevelopers = json.load(file)
   # Get new App Publishers
-  file = open('/appdata/newAppPublishers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newAppPublishers.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsPublishers = json.load(file)
   # Get Updated App Publishers
-  file = open('/appdata/updatedAppPublishers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedAppPublishers.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsPublishers = json.load(file)
 
   # Get App Tuples
@@ -643,43 +656,56 @@ def storeGameApps():
 def storeDLCApps():
   logging.info("Storing Apps-DLC")
   # Get all Apps Details
-  file = open('/appdata/dlc.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'dlc.json')
+  file = open(relative_path, encoding="utf-8")
   apps = json.load(file)
   # Get New Apps Details
-  file = open('/appdata/newDLCAppDetails.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newDLCAppDetails.json')
+  file = open(relative_path, encoding="utf-8")
   newAppDetails = json.load(file)
   # Get Updated App Details
-  file = open('/appdata/updatedDLCAppDetails.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedDLCAppDetails.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppDetails = json.load(file)
   # Get New Tags
-  file = open('/appdata/newDLCAppsTags.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newDLCAppsTags.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsTags = json.load(file)
   # Get Updated Tags
-  file = open('/appdata/updatedDLCAppsTags.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedDLCAppsTags.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsTags = json.load(file)
   # Get new Screenshots
-  file = open('/appdata/newDLCScreenshots.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newDLCScreenshots.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsScreenshots = json.load(file)
   # Get updated Screenshots
-  file = open('/appdata/updatedDLCScreenshots.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedDLCScreenshots.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsScreenshots = json.load(file)
   # Get new Videos
-  file = open('/appdata/newDLCVideos.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newDLCVideos.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsVideos = json.load(file)
   # Get updated Videos
-  file = open('/appdata/updatedDLCVideos.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedDLCVideos.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsVideos = json.load(file)
   # Get new App Developers
-  file = open('/appdata/newDLCDevelopers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newDLCDevelopers.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsDevelopers = json.load(file)
   # Get Updated App Developers
-  file = open('/appdata/updatedDLCDevelopers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedDLCDevelopers.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsDevelopers = json.load(file)
   # Get new App Publishers
-  file = open('/appdata/newDLCPublishers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'newDLCPublishers.json')
+  file = open(relative_path, encoding="utf-8")
   newAppsPublishers = json.load(file)
   # Get Updated App Publishers
-  file = open('/appdata/updatedDLCPublishers.json', encoding="utf-8")
+  relative_path = os.path.join('../appdata', 'updatedDLCPublishers.json')
+  file = open(relative_path, encoding="utf-8")
   updatedAppsPublishers = json.load(file)
 
     # Get App Tuples
@@ -719,7 +745,8 @@ def storeDLCApps():
 #########################################################################################
 
 def main():
-  logging.basicConfig(filename="/appdata/errors.log", filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
+  relative_path = os.path.join('../appdata', 'errors.json')
+  logging.basicConfig(filename=relative_path, filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
   storeGameApps()
   storeDLCApps()
   

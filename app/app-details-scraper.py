@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 import psycopg2
 import psycopg2.extras
@@ -7,39 +8,16 @@ import json
 from tqdm import tqdm
 import time
 from datetime import datetime
+# Add the appropriate paths depending on the environment
+if os.environ.get('DOCKERIZED'):
+    from lib.utils import Utils
+else:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from app.lib.utils import Utils
+
 
 # Rate at which each request can be made. 
 RATE = 1.5
-
-def getTags():
-  # Get all apps from db
-  load_dotenv()
-  connection_string = os.getenv('DATABASE_URL_PYTHON')
-  conn = psycopg2.connect(connection_string)
-  cur = conn.cursor()
-  cur.execute('SELECT * FROM "Tags"')
-  tagsOld = cur.fetchall()
-  oldTagsList = dict()
-  for tag in tagsOld:
-    oldTagsList[tag[2]] = ({"id:": tag[0], "tag_id": tag[1], "tag_name": tag[2]})
-  cur.close()
-  
-  return oldTagsList
-
-def getAppsTags():
-  # Get all apps from db
-  load_dotenv()
-  connection_string = os.getenv('DATABASE_URL_PYTHON')
-  conn = psycopg2.connect(connection_string)
-  cur = conn.cursor()
-  cur.execute('SELECT * FROM "Apps_Tags"')
-  appsTagsOld = cur.fetchall()
-  cur.close()
-  oldAppsTagsList = dict()
-  for tag in appsTagsOld:
-    oldAppsTagsList.setdefault(tag[0], {})[tag[1]] = 0
-  
-  return oldAppsTagsList
 
 def getAppsScreenshots():
   # Get all apps from db
@@ -53,7 +31,6 @@ def getAppsScreenshots():
   oldAppsScreenshotsList = dict()
   for screenshot in appsScreenshotsOld:
     oldAppsScreenshotsList.setdefault(screenshot[1], {})[screenshot[2]] = ({"path_thumbnail": screenshot[3], "path_full": screenshot[4]})
-  
   return oldAppsScreenshotsList
 
 def getAppsVideos():
@@ -176,7 +153,8 @@ def getDetails(appData, oldTags, oldAppsTags):
                   dlcSteamId = parentApp
                 else:
                   # check new apps for parent app
-                  file = open('/appdata/newAppDetails.json', encoding="utf-8")
+                  relative_path = os.path.join('../appdata', 'newAppDetails.json')
+                  file = open(relative_path, encoding="utf-8")
                   newAppDetails = json.load(file)
                   if (parentApp in newAppDetails):
                     if (newAppDetails[parentApp]['HasDetails'] == True):
@@ -216,6 +194,7 @@ def getDetails(appData, oldTags, oldAppsTags):
                     appTags.setdefault(app, {})[oldTags[tag['description']]['tag_id']] = tag['description']
             
             # get Screenshots
+            # TODO: Test this block: old code was incorrectly formating oldAppsScreenshots
             if ("screenshots" in results[str(app)]['data']):
               for image in results[str(app)]['data']['screenshots']:
                 if (int(app) in oldAppsScreenshots):
@@ -381,11 +360,12 @@ def getDetails(appData, oldTags, oldAppsTags):
 
 def getGameDetails():
   # Retrieves all old tags from db
-  oldTags = getTags()
+  oldTags = Utils.getOldTagsName()
   # Retrieves all old Apps_tags from db
-  oldAppsTags = getAppsTags()
+  oldAppsTags = Utils.getAppsTags()
   # Retrieves new apps from file
-  data = getNewApps('/appdata/apps.json')
+  relative_path = os.path.join('../appdata', 'apps.json')
+  data = getNewApps(relative_path)
   # Retrieves old apps from db
   oldAppsList = getOldApps()
   # Get new and updated apps 
@@ -399,38 +379,51 @@ def getGameDetails():
   (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots, updatedAppsVideos, updatedAppDevelopers, updatedAppPublishers) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
-  with open('/appdata/newAppDetails.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newAppDetails.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedAppDetails.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedAppDetails.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newAppsTags.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newAppsTags.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedAppsTags.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedAppsTags.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newAppsScreenshots.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newAppsScreenshots.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedAppsScreenshots.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedAppsScreenshots.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newAppsVideos.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newAppsVideos.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsVideos, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedAppsVideos.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedAppsVideos.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsVideos, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newAppDevelopers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newAppDevelopers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDevelopers, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedAppDevelopers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedAppDevelopers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDevelopers, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newAppPublishers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newAppPublishers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppPublishers, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedAppPublishers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedAppPublishers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppPublishers, f, ensure_ascii=False, indent=4)
 
 def getDLCDetails():
   # Retrieves all old tags from db
-  oldTags = getTags()
+  oldTags = Utils.getOldTagsName()
   # Retrieves all old Apps_tags from db
-  oldAppsTags = getAppsTags()
+  oldAppsTags = Utils.getAppsTags()
   # Retrieves new apps from file
-  data = getNewApps('/appdata/dlc.json')
+  relative_path = os.path.join('../appdata', 'dlc.json')
+  data = getNewApps(relative_path)
   # Retrieves old apps from db
   oldAppsList = getOldApps()
   # Get new and updated apps 
@@ -444,29 +437,41 @@ def getDLCDetails():
   (updatedAppDetails, updatedAppsTags, updatedAppsScreenshots, updatedAppsVideos, updatedAppDevelopers, updatedAppPublishers) = getDetails(updatedApps, oldTags, oldAppsTags)
 
   # Write data to files
-  with open('/appdata/newDLCAppDetails.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newDLCAppDetails.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDetails, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedDLCAppDetails.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedDLCAppDetails.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDetails, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newDLCAppsTags.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newDLCAppsTags.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsTags, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedDLCAppsTags.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedDLCAppsTags.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsTags, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newDLCScreenshots.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newDLCScreenshots.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsScreenshots, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedDLCScreenshots.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedDLCScreenshots.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsScreenshots, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newDLCVideos.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newDLCVideos.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppsVideos, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedDLCVideos.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedDLCVideos.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppsVideos, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newDLCDevelopers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newDLCDevelopers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppDevelopers, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedDLCDevelopers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedDLCDevelopers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppDevelopers, f, ensure_ascii=False, indent=4)
-  with open('/appdata/newDLCPublishers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'newDLCPublishers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(newAppPublishers, f, ensure_ascii=False, indent=4)
-  with open('/appdata/updatedDLCPublishers.json', 'w', encoding='utf-8') as f:
+  relative_path = os.path.join('../appdata', 'updatedDLCPublishers.json')
+  with open(relative_path, 'w', encoding='utf-8') as f:
     json.dump(updatedAppPublishers, f, ensure_ascii=False, indent=4)
 
 ###############################################################################################
