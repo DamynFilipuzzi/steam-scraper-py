@@ -751,7 +751,7 @@ def storeDLCApps():
 #########################################################################################
 
 def main():
-  relative_path = os.path.join(Utils.getSubDirectory(), 'errors.json')
+  relative_path = os.path.join(Utils.getSubDirectory(), 'errors.log')
   logging.basicConfig(filename=relative_path, filemode='a', format='%(asctime)s, %(filename)s, %(funcName)s, %(lineno)d, %(levelname)s, %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',  level=logging.DEBUG)
   storeGameApps()
   storeDLCApps()
