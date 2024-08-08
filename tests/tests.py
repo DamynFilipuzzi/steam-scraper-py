@@ -45,9 +45,6 @@ def test_tags_scraper():
   tags = TagScraper.tagsScraper()
   assert tags != None
 
-def test_fail_job():
-  assert False == True
-
 # # https://stackoverflow.com/questions/35143055/how-to-mock-psycopg2-cursor-object
 # @mock.patch('psycopg2.connect')
 # def test_tags_store(self, mock_connect):
