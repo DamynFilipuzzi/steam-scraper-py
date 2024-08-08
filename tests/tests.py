@@ -1,5 +1,6 @@
 #  Command to run:
 # pytest .\tests\tests.py --cov=app
+# docker compose -p tester -f ./docker-compose-test.yml up --build --force-recreate --remove-orphans
 
 import pytest
 import os

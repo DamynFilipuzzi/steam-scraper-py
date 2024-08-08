@@ -13,7 +13,7 @@ services:
   test:
     build:
       context: .
-      dockerfile: /dockerfiles/test/tester.Dockerfile
+      dockerfile: ./dockerfiles/test/tester.Dockerfile
     command: pytest ./tests/tests.py --cov=app
     volumes:
       - ./appdata:/appdata
