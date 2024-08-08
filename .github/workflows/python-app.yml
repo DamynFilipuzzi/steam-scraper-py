@@ -15,8 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Start Containers
-        run: docker compose -p tester -f ./docker-compose-test.yml up --build --force-recreate --remove-orphans
+      - name: Run docker-compose
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          compose-file: "./docker-compose-test.yml"
+
+      # - name: Start Containers
+      #   run: docker compose -p tester -f ./docker-compose-test.yml up --build --force-recreate --remove-orphans
       # - name: Stop Containers
       #   if: always()
       #   run: docker compose down
