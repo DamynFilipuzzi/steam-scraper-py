@@ -10,25 +10,40 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  docker:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11.3"
-      - name: "Create env file"
-        run: |
-          touch .env
-          echo DATABASE_URL_PYTHON=${{ secrets.DATABASE_URL_PYTHON }} >> .env
-          echo STEAM_API_KEY=${{ secrets.STEAM_API_KEY }} >> .env
-          cat .env
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Test with pytest
-        run: |
-          pip install pytest pytest-cov
-          pytest ./tests/tests.py --cov=app
+
+      - name: Start Containers
+        run: docker compose -p tester -f .\docker-compose-test.yml up --build --force-recreate --remove-orphans
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
+
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.11.3"
+  #     - name: "Create env file"
+  #       run: |
+  #         touch .env
+  #         echo DATABASE_URL_PYTHON=${{ secrets.DATABASE_URL_PYTHON }} >> .env
+  #         echo STEAM_API_KEY=${{ secrets.STEAM_API_KEY }} >> .env
+  #         cat .env
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements.txt
+  #     - name: Test with pytest
+  #       run: |
+  #         pip install pytest pytest-cov
+  #         pytest ./tests/tests.py --cov=app
