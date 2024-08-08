@@ -21,7 +21,7 @@ jobs:
       - name: Start Containers
         run: docker compose -p tester -f .\docker-compose-test.yml up --build --force-recreate --remove-orphans
 
-      - name: Stop containers
+      - name: Stop Containers
         if: always()
         run: docker compose down
 
