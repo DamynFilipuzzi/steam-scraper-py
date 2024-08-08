@@ -1,24 +1,32 @@
 services:
   apps_scraper:
-    build: ./
+    build:
+      context: .
+      dockerfile: /dockerfiles/scraper/scraper.Dockerfile
     command: python3 ./app/apps_scraper.py
     volumes:
       - ./appdata:/appdata
 
   dlc_scraper:
-    build: ./
+    build:
+      context: .
+      dockerfile: /dockerfiles/scraper/scraper.Dockerfile
     command: python3 ./app/dlc_scraper.py
     volumes:
       - ./appdata:/appdata
 
   tags_creator:
-    build: ./
+    build:
+      context: .
+      dockerfile: /dockerfiles/scraper/scraper.Dockerfile
     command: python3 ./app/tags_creator.py
     volumes:
       - ./appdata:/appdata
 
   app-details-scraper:
-    build: ./
+    build:
+      context: .
+      dockerfile: /dockerfiles/scraper/scraper.Dockerfile
     command: python3 ./app/app-details-scraper.py
     volumes:
       - ./appdata:/appdata
@@ -31,7 +39,9 @@ services:
         condition: service_completed_successfully
 
   uploader:
-    build: ./
+    build:
+      context: .
+      dockerfile: /dockerfiles/scraper/scraper.Dockerfile
     command: python3 ./app/apps-details-prices-uploader.py
     volumes:
       - ./appdata:/appdata

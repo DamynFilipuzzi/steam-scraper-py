@@ -8,17 +8,17 @@ import psycopg2.extras
 import logging
 # Add the appropriate paths depending on the environment
 if os.environ.get('DOCKERIZED'):
-    from lib.utils import Utils
+    from lib.utils import Utils, DB
 else:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from app.lib.utils import Utils
+    from app.lib.utils import Utils, DB
 
 class TagScraper:
   # Scrape all apps
   def tagsScraper():
     load_dotenv()
     apiKey = os.getenv('STEAM_API_KEY')
-    oldTagsList = Utils.getOldTagsID()
+    oldTagsList = DB.getOldTagsID()
 
     URL = 'https://api.steampowered.com/IStoreService/GetMostPopularTags/v1/?key={key}'.format(key=apiKey)
     response = requests.get(URL)

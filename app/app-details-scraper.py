@@ -10,15 +10,15 @@ import time
 from datetime import datetime
 # Add the appropriate paths depending on the environment
 if os.environ.get('DOCKERIZED'):
-    from lib.utils import Utils
+    from lib.utils import Utils, DB
 else:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from app.lib.utils import Utils
+    from app.lib.utils import Utils, DB
 
 # Rate at which each request can be made. 
 RATE = 1.5
 
-
+# TODO: Remove and replace with corrected version
 def getAppsScreenshots():
   # Get all apps from db
   load_dotenv()
@@ -33,20 +33,20 @@ def getAppsScreenshots():
     oldAppsScreenshotsList.setdefault(screenshot[1], {})[screenshot[2]] = ({"path_thumbnail": screenshot[3], "path_full": screenshot[4]})
   return oldAppsScreenshotsList
 
-def getAppsVideos():
-  # Get all apps from db
-  load_dotenv()
-  connection_string = os.getenv('DATABASE_URL_PYTHON')
-  conn = psycopg2.connect(connection_string)
-  cur = conn.cursor()
-  cur.execute('SELECT * FROM "Videos"')
-  appsVideosOld = cur.fetchall()
-  cur.close()
-  oldAppsVideosList = dict()
-  for video in appsVideosOld:
-    oldAppsVideosList.setdefault(video[1], {})[video[2]] = ({"video_name": video[3]})
+# def getAppsVideos():
+#   # Get all apps from db
+#   load_dotenv()
+#   connection_string = os.getenv('DATABASE_URL_PYTHON')
+#   conn = psycopg2.connect(connection_string)
+#   cur = conn.cursor()
+#   cur.execute('SELECT * FROM "Videos"')
+#   appsVideosOld = cur.fetchall()
+#   cur.close()
+#   oldAppsVideosList = dict()
+#   for video in appsVideosOld:
+#     oldAppsVideosList.setdefault(video[1], {})[video[2]] = ({"video_name": video[3]})
   
-  return oldAppsVideosList
+#   return oldAppsVideosList
 
 def getNewApps(path):
   # Read data to insert from file
@@ -119,7 +119,7 @@ def getDetails(appData, oldTags, oldAppsTags):
     # Get old data for comparison.
     oldAppsScreenshots = getAppsScreenshots()
     oldApps = getOldApps()
-    oldAppsVideos = getAppsVideos()
+    oldAppsVideos = DB.getAppsVideos()
     oldAppsDevelopers = getOldDevelopers()
     oldAppsPublishers = getOldPublishers()
 
@@ -360,9 +360,9 @@ def getDetails(appData, oldTags, oldAppsTags):
 
 def getGameDetails():
   # Retrieves all old tags from db
-  oldTags = Utils.getOldTagsName()
+  oldTags = DB.getOldTagsName()
   # Retrieves all old Apps_tags from db
-  oldAppsTags = Utils.getAppsTags()
+  oldAppsTags = DB.getAppsTags()
   # Retrieves new apps from file
   relative_path = os.path.join(Utils.getSubDirectory(), 'apps.json')
   data = getNewApps(relative_path)
@@ -418,9 +418,9 @@ def getGameDetails():
 
 def getDLCDetails():
   # Retrieves all old tags from db
-  oldTags = Utils.getOldTagsName()
+  oldTags = DB.getOldTagsName()
   # Retrieves all old Apps_tags from db
-  oldAppsTags = Utils.getAppsTags()
+  oldAppsTags = DB.getAppsTags()
   # Retrieves new apps from file
   relative_path = os.path.join(Utils.getSubDirectory(), 'dlc.json')
   data = getNewApps(relative_path)

@@ -8,6 +8,13 @@ class Utils:
     if (os.path.exists('./appdata') == False):
       os.mkdir('./appdata')
   
+  def getSubDirectory():
+    subDirectory = 'appdata'
+    if os.environ.get('DOCKERIZED'):
+      subDirectory = '../appdata'
+    return subDirectory
+
+class DB:
   # Return all tags currently in the DB indexed by tag_id
   def getOldTagsID():
     load_dotenv()
@@ -68,8 +75,17 @@ class Utils:
 
     return oldAppsScreenshotsList
   
-  def getSubDirectory():
-    subDirectory = 'appdata'
-    if os.environ.get('DOCKERIZED'):
-      subDirectory = '../appdata'
-    return subDirectory
+  def getAppsVideos():
+    # Get all apps from db
+    load_dotenv()
+    connection_string = os.getenv('DATABASE_URL_PYTHON')
+    conn = psycopg2.connect(connection_string)
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM "Videos"')
+    appsVideosOld = cur.fetchall()
+    cur.close()
+    oldAppsVideosList = dict()
+    for video in appsVideosOld:
+      oldAppsVideosList.setdefault(video[1], {})[video[2]] = ({"video_name": video[3]})
+
+    return oldAppsVideosList

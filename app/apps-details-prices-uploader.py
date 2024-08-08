@@ -10,10 +10,10 @@ import logging
 import time
 # Add the appropriate paths depending on the environment
 if os.environ.get('DOCKERIZED'):
-    from lib.utils import Utils
+    from lib.utils import Utils, DB
 else:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from app.lib.utils import Utils
+    from app.lib.utils import Utils, DB
 
 def timing(f):
     def wrap(*args, **kwargs):

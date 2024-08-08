@@ -2,13 +2,14 @@
 # pytest .\tests\tests.py --cov=app
 
 import pytest
+import os
 from unittest import mock
 import os.path
 import shutil
+from app.lib.utils import Utils, DB
 from app.apps_scraper import AppsScraper
 from app.dlc_scraper import DlcScraper
 from app.tags_creator import TagScraper
-from app.lib.utils import Utils
 
 def test_general_working():
   assert "foo".upper() == "FOO"
@@ -43,10 +44,15 @@ def test_tags_scraper():
   tags = TagScraper.tagsScraper()
   assert tags != None
 
-# https://stackoverflow.com/questions/35143055/how-to-mock-psycopg2-cursor-object
+# # https://stackoverflow.com/questions/35143055/how-to-mock-psycopg2-cursor-object
 # @mock.patch('psycopg2.connect')
 # def test_tags_store(self, mock_connect):
 #   expected = [['fake', 'row', 1], ['fake', 'row', 2]]
   
 #   # result of psycopg2.connect(**connection_stuff)
 #   mock_con = mock_connect.return_value
+#   mock_cur = mock_con.cursor.return_value  # result of con.cursor(cursor_factory=DictCursor)
+#   mock_cur.fetchall.return_value = expected  # return this when calling cur.fetchall()
+
+#   result = DB.getOldTagsID()
+#   self.assertEqual(result, expected)
