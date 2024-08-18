@@ -1,15 +1,4 @@
 services:
-  # postgres:
-  #   image: postgres:14-alpine
-  #   ports:
-  #     - 5432:5432
-  #   volumes:
-  #     - ~/apps/postgres:/var/lib/postgresql/data
-  #   environment:
-  #     - POSTGRES_PASSWORD=secret
-  #     - POSTGRES_USER=user
-  #     - POSTGRES_DB=steamdeals
-
   test:
     build:
       context: .
@@ -17,5 +6,3 @@ services:
     command: pytest ./tests/tests.py --cov=app
     volumes:
       - ./appdata:/appdata
-    # depends_on:
-    #   - postgres

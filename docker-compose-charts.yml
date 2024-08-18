@@ -1,6 +1,8 @@
 services:
   top-100:
-    build: ./
+    build:
+      context: .
+      dockerfile: ./dockerfiles/scraper/scraper.Dockerfile
     command: python3 ./app/top-100.py
     volumes:
       - ./appdata:/appdata
